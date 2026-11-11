@@ -480,7 +480,7 @@ L 0x91BC puntos_pinta
 L 0x91C3 puntos_cifras             Las seis cifras sueltas de los puntos (0xE001)
 L 0x91CB puntos_cifra
 L 0x91DE record                    Si los puntos pasan del record, record nuevo
-L 0x9437 cerca_y                   ¿Toca en Y? A = la Y de IY menos la del coche (IX): C si queda entre B y C (con signo, de B a C)
+L 0x9437 cerca_y                   ¿Toca en Y? A = la Y de IY menos la del coche (IX): C (toca) si, con signo, queda entre C - 0x100 y B - 1 (B, el margen por un lado; C, 0x100 menos el del otro)
 L 0x943D cerca_mira
 L 0x9444 cerca_no
 L 0x9446 cerca_x                   Lo mismo en X
@@ -1567,9 +1567,9 @@ C 0x9204 ...al record
 C 0x9206 y sus cifras
 C 0x9437 la Y del otro...
 C 0x943A ...menos la del coche
-C 0x943D por debajo de B: no
-C 0x943F por debajo de C: si
-C 0x9442 C: toca
+C 0x943D menos que B (de 0 a B - 1): toca
+C 0x943F C o mas (de C - 0x100 a -1)?
+C 0x9442 si: toca (C)
 C 0x9444 NC: no
 C 0x9446 la X
 C 0x944E la Y contra la bomba

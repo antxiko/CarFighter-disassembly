@@ -2705,15 +2705,15 @@ DATA_texto_start:
 ; ======================================================================
 
 
-cerca_y:		; ¿Toca en Y? A = la Y de IY menos la del coche (IX): C si queda entre B y C (con signo, de B a C)
+cerca_y:		; ¿Toca en Y? A = la Y de IY menos la del coche (IX): C (toca) si, con signo, queda entre C - 0x100 y B - 1 (B, el margen por un lado; C, 0x100 menos el del otro)
 	ld a,(iy+000h)		;9437   ; la Y del otro...
 	sub (ix+000h)		;943a   ; ...menos la del coche
 cerca_mira:
-	cp b			;943d   ; por debajo de B: no
+	cp b			;943d   ; menos que B (de 0 a B - 1): toca
 	ret c			;943e
-	cp c			;943f   ; por debajo de C: si
+	cp c			;943f   ; C o mas (de C - 0x100 a -1)?
 	jr c,cerca_no		;9440
-	scf			;9442   ; C: toca
+	scf			;9442   ; si: toca (C)
 	ret			;9443
 cerca_no:
 	and a			;9444   ; NC: no
