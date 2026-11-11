@@ -161,10 +161,10 @@ titulo_borra3:
 	ld (hl),a			;8121
 	inc hl			;8122
 	djnz titulo_borra3		;8123
-zona:		; Una zona: la pantalla, la carretera y sus colores segun la zona, los coches y la salida
+zona:		; Una zona: la pantalla, el mapa del recorrido, la carretera y sus colores segun la zona, los coches y la salida
 	ld ix,0e300h		;8125   ; el coche del jugador
 	call pantalla		;8129   ; la pantalla del juego
-	call mapa		;812c   ; el marcador
+	call mapa		;812c   ; el mapa del recorrido
 	ld a,(0e00ah)		;812f   ; la zona...
 	ld hl,0800fh		;8132   ; ...en la tabla 0x8010...
 	add a,l			;8135   ; + la zona
@@ -1855,10 +1855,10 @@ avance_coche:
 	ld de,00020h		;8ceb
 	add iy,de		;8cee
 	djnz avance_coche		;8cf0
-fila_nueva:		; Una fila nueva de la carretera (0xE800): la de la zona, el puente de la zona 2, y los tramos de 0xE188, 0xE1A8 y 0xE1B0
+fila_nueva:		; Una fila nueva de la carretera (0xE800): la de la zona, la orilla del mar de la zona 2, y los tramos de 0xE188, 0xE1A8 y 0xE1B0
 	ld a,(0e00ah)		;8cf2   ; la zona 2?
 	cp 002h		;8cf5
-	jr z,fila_puente		;8cf7
+	jr z,fila_costa		;8cf7
 	ld hl,0e1bah		;8cf9   ; una fila de cada dos...
 	inc (hl)			;8cfc
 	bit 0,(hl)		;8cfd
@@ -1872,32 +1872,32 @@ fila_copia:
 fila_otra:		; Una fila si y otra no
 	ld hl,0e618h		;8d0e   ; ...o la de 0xE618
 	jr fila_copia		;8d11
-fila_puente:		; La zona 2: el agua (0x6D) y 5 casillas del puente (0x939D, 27 pasos)
+fila_costa:		; La zona 2: la arena (0x6D) y 5 casillas de la orilla y el mar (0x939D, 27 pasos)
 	ld hl,0e800h		;8d13   ; la fila nueva...
 	ld b,018h		;8d16
-fila_puente_agua:
-	ld (hl),06dh		;8d18   ; ...toda de agua (0x6D)
+fila_costa_arena:
+	ld (hl),06dh		;8d18   ; ...toda de arena (0x6D, del color de la zona)
 	inc hl			;8d1a
-	djnz fila_puente_agua		;8d1b
-	ld hl,0939dh		;8d1d   ; el puente
+	djnz fila_costa_arena		;8d1b
+	ld hl,0939dh		;8d1d   ; la orilla
 	ld a,(0e1b9h)		;8d20   ; el paso...
 	inc a			;8d23
 	ld (0e1b9h),a		;8d24
 	cp 01bh		;8d27   ; ...de 0 a 26
-	jr c,fila_puente_paso		;8d29
+	jr c,fila_costa_paso		;8d29
 	xor a			;8d2b
 	ld (0e1b9h),a		;8d2c
-fila_puente_paso:
+fila_costa_paso:
 	ld b,a			;8d2f
 	inc b			;8d30
 	xor a			;8d31   ; x 5
-fila_puente_x5:
+fila_costa_x5:
 	add a,005h		;8d32
-	djnz fila_puente_x5		;8d34
+	djnz fila_costa_x5		;8d34
 	add a,l			;8d36
-	jr nc,fila_puente_pon		;8d37
+	jr nc,fila_costa_pon		;8d37
 	inc h			;8d39
-fila_puente_pon:
+fila_costa_pon:
 	ld l,a			;8d3a
 	ld de,0e813h		;8d3b   ; en la columna 19
 	ld bc,00005h		;8d3e   ; 5 casillas
@@ -2650,9 +2650,10 @@ DATA_textos_marcador:
 	defb 010h	; 939c
 
 ; ----------------------------------------------------------------------
-; DATOS puente: El puente de la zona 2: 27 pasos de 5 casillas
+; DATOS costa: La orilla del mar de la zona 2: 27 pasos de 5 casillas (la
+;   orilla y el mar, 0x7B)
 ;   0x939d..0x9424  (135 bytes)
-DATA_puente:
+DATA_costa:
 	defb 010h,010h,01bh,06fh,037h	; 939d
 	defb 06dh,0cch,0cdh,07bh,07bh	; 93a2
 	defb 06dh,0c8h,0c9h,07bh,07bh	; 93a7
@@ -2682,7 +2683,7 @@ DATA_puente:
 	defb 06dh,0c4h,0c5h,07bh,07bh	; 941f
 
 ; ----------------------------------------------------------------------
-; DATOS bytes_9424: Cinco bytes detras del puente
+; DATOS bytes_9424: Cinco bytes detras de la orilla
 ;   0x9424..0x9429  (5 bytes)
 DATA_bytes_9424:
 	defb 06dh,0c0h,0c1h,07bh,07bh	; 9424
@@ -3773,7 +3774,7 @@ sale_coche5:
 	ret			;9cbb
 salen_coches_fin:
 	ret			;9cbc
-presentacion:		; La presentacion: CASIO se abre en el centro de la pantalla fila a fila (0x9D37) con su sonido; el boton la corta
+presentacion:		; La presentacion: cuatro CASIO entran por la izquierda, la derecha, arriba y abajo y se juntan en el centro (filas 11 y 12), un paso cada 3 cuadros, 21 pasos; despues la musica 4 y 128 cuadros; el boton la corta
 	ld a,001h		;9cbd   ; el paso 1
 	ld (0e1a1h),a		;9cbf
 	ld hl,0180ch		;9cc2   ; desde la fila 0, columna 12...
@@ -3841,7 +3842,7 @@ DATA_casio_casillas:
 ; ======================================================================
 
 
-presentacion_filas:		; Un paso de la presentacion: CASIO en dos filas que crecen desde el centro (0x9D25, 0x9D2E), hasta 9 casillas
+presentacion_filas:		; Un paso de la presentacion: los dos CASIO de los lados (sus dos filas, 0x9D25 y 0x9D2E) en las filas 11 y 12, que entran por la izquierda y la derecha casilla a casilla
 	ld a,(0e1a1h)		;9d37   ; el paso...
 	ld c,a			;9d3a
 	cp 009h		;9d3b   ; ...no mas de 9

@@ -59,6 +59,8 @@ class Msx(Z80):
         elif pc == 0x005C:                                # LDIRVM: RAM HL -> VRAM DE, BC bytes
             for i in range(self.bc):
                 v.vram[(self.de + i) & 0x3FFF] = self.mem[(self.hl + i) & 0xFFFF]
+            # como la BIOS (ex de,hl y el bucle con DE): vuelve con HL = la VRAM, DE = la RAM + BC y BC = 0
+            self.hl, self.de, self.bc = self.de, (self.hl + self.bc) & 0xFFFF, 0
         elif pc == 0x005F:                                # CHGMOD
             assert self.a == 2, "CHGMOD %d" % self.a
             v.regs[:] = SCREEN2
@@ -76,7 +78,7 @@ class Msx(Z80):
             v.vram[0:0x1800] = bytes(0x1800)
             v.vram[0x2000:0x3800] = bytes([self.mem[0xF3E9] << 4 | self.mem[0xF3EA]]) * 0x1800
         elif pc == 0x0062:                                # CHGCLR
-            v.regs[7] = self.mem[0xF3EB] & 0x0F
+            v.regs[7] = (self.mem[0xF3E9] & 0x0F) << 4 | (self.mem[0xF3EB] & 0x0F)   # como C-BIOS: el texto y el borde
         elif pc == 0x0041:                                # DISSCR
             v.regs[1] &= 0xBF
         elif pc == 0x0044:                                # ENASCR

@@ -74,10 +74,10 @@ C 0x8114 0xE00C-0xE00E a cero
 L 0x8118 titulo_borra2
 C 0x811C 0xE0C0-0xE0CF a cero
 L 0x8121 titulo_borra3
-L 0x8125 zona                      Una zona: la pantalla, la carretera y sus colores segun la zona, los coches y la salida
+L 0x8125 zona                      Una zona: la pantalla, el mapa del recorrido, la carretera y sus colores segun la zona, los coches y la salida
 C 0x8125 el coche del jugador
 C 0x8129 la pantalla del juego
-C 0x812C el marcador
+C 0x812C el mapa del recorrido
 C 0x812F la zona...
 C 0x8132 ...en la tabla 0x8010...
 C 0x8137 ...el color de la carretera
@@ -367,14 +367,14 @@ L 0x8CC0 avance_punto              Un punto, salvo en la demostracion
 L 0x8CCB avance_distancia          La distancia, uno mas; la bomba baja con la carretera
 L 0x8CE0 avance_coches             Los diez coches bajan con la carretera
 L 0x8CE6 avance_coche
-L 0x8CF2 fila_nueva                Una fila nueva de la carretera (0xE800): la de la zona, el puente de la zona 2, y los tramos de 0xE188, 0xE1A8 y 0xE1B0
+L 0x8CF2 fila_nueva                Una fila nueva de la carretera (0xE800): la de la zona, la orilla del mar de la zona 2, y los tramos de 0xE188, 0xE1A8 y 0xE1B0
 L 0x8D04 fila_copia
 L 0x8D0E fila_otra                 Una fila si y otra no
-L 0x8D13 fila_puente               La zona 2: el agua (0x6D) y 5 casillas del puente (0x939D, 27 pasos)
-L 0x8D18 fila_puente_agua
-L 0x8D2F fila_puente_paso
-L 0x8D32 fila_puente_x5
-L 0x8D3A fila_puente_pon
+L 0x8D13 fila_costa                La zona 2: la arena (0x6D) y 5 casillas de la orilla y el mar (0x939D, 27 pasos)
+L 0x8D18 fila_costa_arena
+L 0x8D2F fila_costa_paso
+L 0x8D32 fila_costa_x5
+L 0x8D3A fila_costa_pon
 L 0x8D43 fila_tramo1               El primer tramo (0xE188): casillas que se copian; cuando se acaba, el siguiente (0x8E5F)
 L 0x8D55 fila_tramo1_va
 L 0x8D87 fila_tramo1_sig
@@ -634,7 +634,7 @@ L 0x9C7B sale_coche3
 L 0x9C8B sale_coche4
 L 0x9CA6 sale_coche5
 L 0x9CBC salen_coches_fin
-L 0x9CBD presentacion              La presentacion: CASIO se abre en el centro de la pantalla fila a fila (0x9D37) con su sonido; el boton la corta
+L 0x9CBD presentacion              La presentacion: cuatro CASIO entran por la izquierda, la derecha, arriba y abajo y se juntan en el centro (filas 11 y 12), un paso cada 3 cuadros, 21 pasos; despues la musica 4 y 128 cuadros; el boton la corta
 L 0x9CCE presentacion_cuadro
 L 0x9D04 presentacion_sig
 L 0x9D06 presentacion_fin
@@ -642,7 +642,7 @@ L 0x9D0B presentacion_espera
 L 0x9D19 presentacion_corta
 D 0x9D24 0x9D37 casio_casillas  Las casillas de CASIO en grande: un espacio, ocho de arriba, otro espacio, ocho de abajo y otro
 F 0x9D24 1,8,1,8,1
-L 0x9D37 presentacion_filas        Un paso de la presentacion: CASIO en dos filas que crecen desde el centro (0x9D25, 0x9D2E), hasta 9 casillas
+L 0x9D37 presentacion_filas        Un paso de la presentacion: los dos CASIO de los lados (sus dos filas, 0x9D25 y 0x9D2E) en las filas 11 y 12, que entran por la izquierda y la derecha casilla a casilla
 L 0x9D41 presentacion_arriba
 L 0x9D62 presentacion_abajo
 L 0x9D77 presentacion_izq
@@ -739,9 +739,9 @@ D 0x9362 0x9367 texto_empty  EMPTY (sin gasolina)
 D 0x9367 0x936D bytes_9367  Seis cifras (1, 0, 0, 0, 0, 0) que nadie lee: el record empieza en 10000 desde INIT
 D 0x936D 0x939D textos_marcador  El marcador: HISCORE (que se solapa con SCORE), SCORE, BOMB, FUEL y su luz, los recuadros y SPEED
 F 0x936D 2,5,4,6,14,14,2
-D 0x939D 0x9424 puente  El puente de la zona 2: 27 pasos de 5 casillas
+D 0x939D 0x9424 costa  La orilla del mar de la zona 2: 27 pasos de 5 casillas (la orilla y el mar, 0x7B)
 F 0x939D 5
-D 0x9424 0x9429 bytes_9424  Cinco bytes detras del puente
+D 0x9424 0x9429 bytes_9424  Cinco bytes detras de la orilla
 D 0x9429 0x9432 texto_game_over  GAME OVER
 D 0x9432 0x9437 texto_start  START
 D 0x9DA0 0x9DA8 presentacion_fondo  Ocho espacios: el fondo de la presentacion
@@ -1348,8 +1348,8 @@ C 0x8D04 ...a la fila nueva (0xE800)
 C 0x8D07 24 casillas
 C 0x8D0E ...o la de 0xE618
 C 0x8D13 la fila nueva...
-C 0x8D18 ...toda de agua (0x6D)
-C 0x8D1D el puente
+C 0x8D18 ...toda de arena (0x6D, del color de la zona)
+C 0x8D1D la orilla
 C 0x8D20 el paso...
 C 0x8D27 ...de 0 a 26
 C 0x8D31 x 5

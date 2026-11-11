@@ -27,7 +27,7 @@ PALETA = [
     (33, 176, 59), (201, 91, 186), (204, 204, 204), (255, 255, 255),
 ]
 
-RAM_N = 0x1100         # lo que se graba: GRABA_RAM = "0xE000 0x1000"
+RAM_N = 0x1100          # lo que se graba: GRABA_RAM = "0xE000 0x1100"
 
 
 def cuadros(ruta, ram_n=RAM_N):
