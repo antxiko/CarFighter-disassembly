@@ -2932,7 +2932,7 @@ coche_otro:		; Un coche de los otros (0xE360, 32 bytes): por su tipo (IY+4): 1-2
 	ld a,(iy+004h)		;95fe   ; el camion?
 	cp 003h		;9601   ; 3: el camion
 	jr nz,coche_otro_sale		;9603
-	ld (iy+000h),0e4h		;9605   ; el camion: cuatro sprites (0x24-0x30), azul claro y negro, abajo
+	ld (iy+000h),0e4h		;9605   ; el camion: cuatro sprites (0x24-0x30), magenta y negro, abajo
 	ld (iy+002h),024h		;9609   ; sus dibujos: 0x24, 0x28, 0x2C, 0x30
 	ld (iy+012h),028h		;960d
 	ld (iy+022h),02ch		;9611

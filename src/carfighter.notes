@@ -522,7 +522,7 @@ C 0x95EC 4
 C 0x95F1 ya ha salido?
 C 0x95F8 sale
 C 0x95FE el camion?
-C 0x9605 el camion: cuatro sprites (0x24-0x30), azul claro y negro, abajo
+C 0x9605 el camion: cuatro sprites (0x24-0x30), magenta y negro, abajo
 C 0x9629 su velocidad: 16 menos que el coche
 L 0x963B coche_otro_sale           Un coche (dibujos 0x14 y 0x18): sale por arriba o por abajo segun las velocidades
 C 0x964B el coche va despacio?

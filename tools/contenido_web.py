@@ -81,6 +81,11 @@ PAGINAS = [
      ("THE-CARS.html", "LOS-COCHES.html", "The other cars", "Los otros coches",
       "the cars that chase, the truck and what it drops, the shots and the bombs",
       "los coches que persiguen, el cami&oacute;n y lo que suelta, los disparos y las bombas"),
+     ("THE-SPRITES.html", "LOS-SPRITES.html", "The sprites", "Los sprites",
+      "the car, the other cars and the truck, hit and blowing up, the bomb and the loose things, put together from "
+      "the ROM tables",
+      "el coche, los otros coches y el cami&oacute;n, tocados y estallando, la bomba y las cosas sueltas, montados "
+      "desde las tablas de la ROM"),
      ("THE-TEXTS.html", "LOS-TEXTOS.html", "The texts", "Los textos",
       "every text in the ROM, the names of the cities and CASIO from the four sides",
       "todos los textos de la ROM, los nombres de las ciudades y CASIO por los cuatro lados"),
