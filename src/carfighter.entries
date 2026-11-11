@@ -1,0 +1,18 @@
+# Puntos de entrada que el trazado NO puede deducir solo.
+#
+# Cada uno lleva escrito POR QUE hace falta.
+
+# El arranque: la cabecera da INIT en 0x8028.
+0x8028   # INIT
+
+# La interrupcion: INIT pone su direccion en H.TIMI (0xFDA0) en 0x803D-0x8045.
+0x9021
+
+# Tres trozos de codigo a los que no se llega (ni call, ni jp, ni salto, ni en las medidas de openMSX), declarados
+# para que se lean como codigo:
+# 0x831C: el choque a cero y de vuelta al bucle de la carrera (detras de un "jr" que salta por encima).
+0x831C
+# 0x8FA7: las letras 0x20-0x2F de la BIOS (0x1CBF, 128 bytes) a la VRAM, como 0x8F98.
+0x8FA7
+# 0x9011: "ld b,32" y a 0x9013, la copia de los sprites: 32 de una vez.
+0x9011

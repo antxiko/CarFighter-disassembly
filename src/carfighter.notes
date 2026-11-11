@@ -1,0 +1,2089 @@
+# CAR FIGHTER (Casio, 1985) - anotaciones
+#
+# LA ROM: 16 KB en la pagina 2 (0x8000-0xBFFF). La cabecera es "AB" e INIT (0x8028); el resto, a cero.
+#
+# LA INTERRUPCION va por el gancho H.TIMI (0xFD9F): INIT pone alli un "jp 0x9021".
+#
+# EL JUEGO: un coche visto desde arriba por una carretera que baja, con bombas, gasolina (FUEL), velocidad
+# (SPEED) y marchas; ocho zonas, cada una acaba en un CHECK POINT y la ultima en la meta (GOAL).
+#
+# LOS TEXTOS van en casillas propias: 0x00-0x09 las cifras, 0x0A los dos puntos, 0x10 el espacio, 0x11 la A,
+# 0x12 la B... hasta 0x2A la Z; 0x69 es la (c).
+#
+# LA RAM, lo que se lee en el listado:
+#   0xE000 la partida en marcha   0xE00A la zona (1-8)   0xE010 / 0xE011 cuentas de cuadros
+#   0xE043 el boton de empezar   0xE080-0xE082 la gasolina: unidades, decenas y centenas (de 0 a 100 litros)
+#   0xE183 el coche choca o se sale   0xE184 el final de la zona   0xE300 el coche del jugador
+#   0xE360 diez coches mas (32 bytes)   0xE600 la carretera
+# ======================================================================
+# EL ARRANQUE Y LA PARTIDA
+# ======================================================================
+D 0x8000 0x800F cabecera  "AB", INIT (0x8028) y el resto de la cabecera a cero; 0x8010 empieza en 0x800F con un 0
+F 0x8000 2,w,11
+D 0x800F 0x8028 tablas_zonas  Por zona (1-8, indice desde 0x800F): el color de la carretera (0x8010), el color de los bordes (0x8018) y la distancia hasta el CHECK POINT (0x8020)
+F 0x800F 1,8,8,8
+L 0x8028 init                      El arranque: la RAM a cero, la pila, la interrupcion en H.TIMI, SCREEN 2 y los colores
+C 0x8028 sin interrupciones
+C 0x8029 DISSCR
+C 0x802C 0xE000-0xF0FF...
+C 0x802F ...0x1100 bytes...
+L 0x8032 init_borra                ...a cero
+C 0x803A la pila
+C 0x803D la interrupcion (0x9021)...
+C 0x8040 ...en H.TIMI...
+C 0x8043 ...con su "jp"
+C 0x8048 SETGRP: SCREEN 2
+C 0x804B fondo y borde negros...
+C 0x8052 ...letras blancas (0xFF)
+C 0x8056 CHGCLR
+C 0x8059 los dibujos de las casillas en los tres tercios
+C 0x8065 el color de las casillas 0x10 en adelante, en los tres tercios
+C 0x8078 los colores de toda la pantalla a 0xF0
+C 0x807B los dibujos de los sprites
+C 0x807E el registro 1 a 0xA2: la pantalla apagada, sprites de 16 x 16
+C 0x8083 WRTVDP
+C 0x8086 la zona 1
+L 0x808F titulo                    El titulo: la pantalla en blanco, CAR FIGHTER, CASIO, PUSH TRIG:1 OR SPC y el copyright; espera el boton o la demostracion
+C 0x8092 la pantalla en blanco
+C 0x8098 ENASCR
+C 0x809E CASIO en rojo (6 casillas)...
+C 0x80A1 ...en la fila 15, columna 13
+C 0x80A7 CAR en letras grandes: 4 filas de 14 desde la fila 3, columna 9
+L 0x80AF titulo_fila               Una fila
+C 0x80B6 FIGHTER: 5 filas de 25 desde la fila 8, columna 4
+L 0x80BB titulo_fila2              Una fila
+C 0x80C2 PUSH TRIG:1 OR SPC...
+C 0x80C5 ...en la fila 18, columna 8
+C 0x80CD el copyright...
+C 0x80D0 ...en la fila 20, columna 5
+C 0x80D8 ENASCR
+C 0x80DB la cuenta de la espera a 0
+L 0x80DF titulo_espera             Espera: si pasan 240 cuadros, la demostracion en una zona al azar (1-4)
+C 0x80E2 240?
+C 0x80E6 la demostracion
+C 0x80E9 una zona al azar...
+C 0x80ED ...de 1 a 4
+L 0x80F3 titulo_boton              El boton: una partida nueva desde la zona 1
+C 0x80F6 pulsado?
+C 0x80F9 sin demostracion
+C 0x8103 la zona 1...
+C 0x8107 ...y la partida en marcha
+C 0x810A 0xE001-0xE006 a cero
+L 0x8110 titulo_borra
+C 0x8114 0xE00C-0xE00E a cero
+L 0x8118 titulo_borra2
+C 0x811C 0xE0C0-0xE0CF a cero
+L 0x8121 titulo_borra3
+L 0x8125 zona                      Una zona: la pantalla, la carretera y sus colores segun la zona, los coches y la salida
+C 0x8125 el coche del jugador
+C 0x8129 la pantalla del juego
+C 0x812C el marcador
+C 0x812F la zona...
+C 0x8132 ...en la tabla 0x8010...
+C 0x8137 ...el color de la carretera
+C 0x813B la carretera en la RAM: 12 parejas...
+C 0x8143 ...y otras 12
+C 0x814A el color de los bordes (0x8018)
+C 0x8154 en los tres tercios, desde la casilla 0x6D
+C 0x8166 la mitad alta...
+C 0x816C ...el otro color
+C 0x816D 112 bytes desde la casilla 0x5D, en los tres tercios
+C 0x8185 0xE8C0...
+C 0x8188 ...en 0xE186
+C 0x818B la tabla de la zona (0x9DAB)...
+C 0x8191 ...en 0xE18D
+C 0x8198 otra (0x9DBB)...
+C 0x819E ...en 0xE1A6
+C 0x81A5 otra (0x9DCB)...
+C 0x81AB ...en 0xE1AE
+C 0x81B2 DISSCR
+C 0x81B5 24 veces
+L 0x81B7 zona_baja                 La carretera baja una fila
+C 0x81BE la zona 1?
+C 0x81C5 si: START (0x9432) en la fila 11, columna 11
+L 0x81CE zona_coche                El coche en su sitio (Y 0x60, X 0x60) y en marcha
+L 0x81D9 zona_salida
+C 0x81F5 0x3F8...
+C 0x81F8 ...en 0xE1C4
+C 0x81FE ENASCR
+L 0x8205 carrera                   El bucle de la carrera: un paso cada vez que la interrupcion cuenta un cuadro
+C 0x8205 ha chocado o se ha salido?
+C 0x820C se acaba la zona?
+L 0x8213 carrera_cuadro            Espera al cuadro siguiente (0xE011)
+C 0x821B el cuadro, gastado
+C 0x821D las partes del juego
+C 0x8238 la distancia de la zona (0x8020)...
+C 0x8242 ...alcanzada?
+C 0x8248 la zona 3?
+C 0x824D ...tambien la X
+L 0x8254 carrera_fin               El final de la zona
+L 0x8257 carrera_sigue             La partida sigue?
+C 0x825D el boton (en la demostracion)
+C 0x8263 al titulo
+L 0x8266 texto14                   Copia 14 casillas de HL a la VRAM DE y DE pasa a la fila siguiente
+L 0x8269 texto_n                   ...BC casillas (LDIRVM)
+L 0x8274 texto25                   25 casillas
+L 0x8279 colores8                  FILVRM: 8 bytes del color A en HL; A vuelve con D
+L 0x8281 coches                    Los diez coches de 0xE360 (32 bytes cada uno)
+C 0x8283 desde 0xE360
+L 0x8287 coche_uno                 Uno
+C 0x828C el siguiente
+L 0x8294 pantalla                  La pantalla del juego: apagada, la tabla de nombres, los sprites y los colores
+C 0x82A0 0xE040-0xE045 a cero
+L 0x82A6 pantalla_ram_borra
+L 0x82C7 espera_b                  Espera B cuadros (0xE010); vuelve antes si no hay partida y se pulsa el boton
+L 0x82CB espera_cuenta
+L 0x82D6 espera_sigue
+L 0x82DD colores_tabla             B bytes de la tabla 0xB168 en la VRAM HL: su mitad alta con el color C
+L 0x82E0 colores_byte
+L 0x82EC parejas                   B parejas (A, C) desde HL
+L 0x82F3 tabla_zona                DE = la palabra de la zona en la tabla HL
+L 0x82F7 tabla_zona_suma
+L 0x82FC tabla_zona_lee
+L 0x8301 choque                    El coche choca contra el borde (0xE183 = 1 o 2) o se queda sin gasolina (3, parado)
+L 0x830F choque_va
+L 0x8311 choque_aparta
+L 0x8323 choque_para               El coche se para: el sonido 5 y todo a cero
+L 0x8351 choque_gasolina           Diez litros menos de gasolina; sin gasolina, 0xE182
+L 0x8370 choque_cuenta_baja
+L 0x8377 choque_cuenta_cero
+L 0x837D choque_espera             La cuenta y 64 cuadros de espera
+L 0x838D choque_cuadro
+L 0x83C0 choque_recoloca           El coche vuelve a la carretera
+L 0x83D3 choque_derecha
+L 0x83DE choque_sitio
+L 0x83E3 game_over                 Sin gasolina: EMPTY, el sonido 6, una espera, GAME OVER y al titulo
+C 0x83E6 EMPTY (0x9362) en la fila 15, columna 11
+C 0x83F9 GAME OVER (0x9429) en la fila 10, columna 9
+C 0x8405 el sonido 1
+L 0x841C fin_zona                  El final de la zona: CHECK POINT o, en la zona 8, GOAL; el coche sale por arriba, cuenta lo que queda y la zona siguiente
+C 0x8426 el sonido 3
+C 0x842B la zona 8?
+C 0x8432 CHECK POINT en la fila 8, columna 7
+L 0x8440 fin_zona_goal             GOAL
+L 0x8449 fin_zona_sale             El coche sale por arriba, 3 pixeles por cuadro
+L 0x846F fin_zona_cuenta           La gasolina que queda baja de litro en litro, cada uno con sus puntos
+L 0x8489 fin_cuenta1
+L 0x848C fin_cuenta2
+L 0x8492 fin_cuenta3
+L 0x8499 fin_cuenta_puntos
+L 0x84A6 fin_zona_sig              La zona siguiente; despues de la 8, otra vez la 1 y una vuelta mas
+D 0x84BF 0x84CE textos_fin  CHECK POINT (11 casillas) y GOAL (4)
+F 0x84BF 11,4
+L 0x84CE colores_blanco            Toda la tabla de colores a 0xF0
+L 0x84D9 texto5                    5 casillas de HL en la VRAM DE
+L 0x84DC texto_vram                LDIRVM
+L 0x84DF texto4                    4 casillas
+L 0x84E4 texto6                    6 casillas
+L 0x851A vram_marcador             HL = la casilla del marcador (0x18B6 + el byte de HL), y HL apunta al siguiente
+L 0x8524 mapa                      Al empezar la zona, el mapa del recorrido (RLE de 0x9210) en el centro de la pantalla, las zonas ya hechas marcadas y el coche en el sitio de la zona
+C 0x8524 en partida?
+C 0x8529 ENASCR
+C 0x852C el mapa en 0xE630...
+C 0x852F ...de 0x9210...
+C 0x8532 ...205 casillas
+L 0x8534 mapa_byte                 Un byte: con la mitad alta, tal cual
+L 0x8542 mapa_tramo                Con la mitad alta a 0: cuantos y que casilla
+L 0x8546 mapa_repite
+L 0x854F mapa_vram                 A la pantalla: 12 filas de 17, una cada cuadro de 0xE1B8
+L 0x8555 mapa_fila
+C 0x856F las zonas ya hechas...
+C 0x8573 ...ninguna
+C 0x8575 sus marcas (0x851A hacia atras, de 7 en 7)
+L 0x857D mapa_marca_tabla
+L 0x8582 mapa_marca                Una zona hecha: tres casillas y un trazo de dos
+L 0x8584 mapa_marca_casilla
+L 0x85A9 mapa_coche                El coche (sprite) en el sitio de la zona (0x863D) y el nombre de la zona (0xB780) letra a letra
+C 0x85B9 el dibujo 0x48...
+C 0x85BD ...color 6
+C 0x85CA en la fila 20, columna 7: 11 letras
+C 0x85D6 en la fila 20, columna 18: el resto
+L 0x85E9 mapa_espera               32 cuadros
+L 0x85F7 letra_a_letra             B letras de DE en la VRAM HL, una cada 4 cuadros con el sonido 8
+L 0x860A cuatro_cuadros            Espera 4 cuadros; el coche parpadea en el mapa
+L 0x8615 cuatro_cuadros_va
+L 0x8634 parpadeo_apaga
+D 0x863D 0x864D mapa_sitios  El sitio del coche en el mapa de cada zona (Y, X), ocho zonas
+F 0x863D 2
+D 0x864D 0x8655 bytes_864d  Ocho bytes (0x70-0xA0) detras de la tabla: ninguna instruccion los lee por su direccion
+F 0x864D 8
+L 0x8655 distancia                 La marca de la distancia recorrida en la barra de la derecha (0xE19C contra el paso de la zona, 0x8692)
+L 0x8666 distancia_divide
+L 0x866D distancia_marca
+L 0x8672 distancia_fila
+L 0x867B distancia_pon
+L 0x8683 distancia_sube
+D 0x8692 0x869A pasos_zona  Lo que vale cada marca de la barra en cada zona
+F 0x8692 8
+L 0x869A carretera_fila            HL = la fila de la carretera en la RAM (0xE8C0, 24 bytes por fila, da la vuelta en 0xEB00) que esta en la Y A
+L 0x86A4 carretera_fila_sig
+L 0x86AD carretera_fila_va
+L 0x86B0 bordes                    El coche contra los bordes de la carretera: a mucha velocidad (0xE194 >= 0x82) choca; si no, rebota; las casillas 0x3C son la gasolinera
+L 0x86B9 borde_izq_busca           Por la izquierda: la primera casilla de borde
+L 0x86CE borde_izq_sig
+L 0x86D2 borde_izq_recto
+L 0x86D6 borde_izq_curva
+L 0x86DB borde_izq
+L 0x86E3 borde_izq_choque
+L 0x86F1 borde_izq_rebota
+L 0x86FB gasolinera_izq
+L 0x870E borde_der                 Por la derecha
+L 0x8715 borde_der_va
+L 0x8718 borde_der_busca
+L 0x872D borde_der_sig
+L 0x8731 borde_der_recto
+L 0x8735 borde_der_curva
+L 0x873A borde_der_mira
+L 0x8742 borde_der_choque
+L 0x8750 borde_der_rebota
+L 0x875A gasolinera_der
+L 0x876D bordes_fin
+L 0x876E gasolinera                En la gasolinera, cada 4 cuadros un litro mas (hasta 100) con el sonido 5
+C 0x8780 ya 100?
+C 0x878B las unidades...
+C 0x8795 ...las decenas...
+C 0x879E ...y 100
+L 0x87A1 borde_x_izq               B = la columna x 8 - C; A = la X del coche
+L 0x87AB borde_x_der               B = la columna x 8 + C; A = la X del coche
+L 0x87B5 entre8                    A / 8
+L 0x87BB casilla_fila              La casilla A / 8 de la fila HL
+L 0x87C5 marcador                  El marcador de la derecha: HISCORE, SCORE, BOMB, FUEL, SPEED, P= y la barra
+L 0x8843 gasolina_gasta            El coche gasta gasolina: un litro cada tantos cuadros (60 parado; menos cuanto mas corre); con menos de 20, la luz de FUEL parpadea con el sonido 4; sin gasolina, 0xE183 = 3
+C 0x8843 se acaba la zona?...
+C 0x8849 ...choca?...
+C 0x884C ...sin gasolina?
+C 0x884F las centenas...
+C 0x8853 ...y las decenas: menos de 20?
+C 0x8859 la luz de FUEL: la casilla 0x31 o 0x32 cada 4 cuadros...
+C 0x8862 ...en la fila 6, columna 30
+C 0x8868 el sonido 4
+L 0x886D gasolina_ritmo            Cada cuantos cuadros: la velocidad / 4 + 14, o 60 si va despacio
+C 0x8870 menos de 8: 60 cuadros
+L 0x8878 gasolina_rapido
+L 0x887F gasolina_cuenta
+C 0x8886 un litro menos (BCD, cuatro cifras)
+C 0x889C sin gasolina: 0xE182...
+C 0x88A0 ...y 0xE183 = 3
+L 0x88A6 gasolina_baja4
+L 0x88AB gasolina_nueve2
+L 0x88AD gasolina_nueve1
+L 0x88B1 gasolina_baja3
+L 0x88B6 gasolina_baja2
+L 0x88BB gasolina_baja1
+L 0x88BC gasolina_pinta            La gasolina en la pantalla: las cifras al reves en 0xE084; el bucle de los ceros de la izquierda los cambia por 0
+L 0x88C4 gasolina_copia
+L 0x88CE gasolina_ceros
+L 0x88D5 gasolina_vram             Tres cifras en la fila 8, columna 27
+L 0x88E1 disparo                   El disparo (boton 1): sale hacia donde mira el coche, 4 pixeles por cuadro, hasta salir de la pantalla
+C 0x88E1 ya hay disparo?
+C 0x88E8 el boton 1?
+C 0x88F1 parado no dispara
+C 0x88FA el sonido 2
+C 0x88FF hacia donde mira el coche
+L 0x890E disparo_sale              El sprite del disparo (+0x20): delante del coche, dibujo 0x40, blanco
+L 0x8920 disparo_derecha
+L 0x8927 disparo_vuela             Vuela en su direccion
+L 0x8938 disparo_arriba
+L 0x893D disparo_y
+L 0x8942 disparo_der
+L 0x8949 disparo_abajo
+L 0x8950 disparo_izq
+L 0x8955 disparo_x
+L 0x8958 disparo_fuera             Fuera de la pantalla?
+L 0x896F disparo_acaba
+L 0x8978 bomba                     La bomba (boton 2): una menos de BOMB, el sonido 3, sale hacia donde mira y a los 32 cuadros estalla (el sonido 7)
+C 0x897F el boton 2?
+C 0x8988 parado no tira
+C 0x898E quedan bombas?
+C 0x8993 una menos (BCD)
+C 0x8999 en el marcador
+C 0x899C el sonido 3
+L 0x89B8 bomba_derecha
+L 0x89BC bomba_sale                El sprite de la bomba (+0x30): dibujo 0x44, negro
+L 0x89D1 bomba_vuela               Vuela, 2 pixeles por cuadro
+L 0x89F3 bomba_der
+L 0x89F8 bomba_abajo
+L 0x89FC bomba_y
+L 0x8A01 bomba_izq
+L 0x8A05 bomba_x
+L 0x8A08 bomba_cuenta              Dentro de la pantalla: la cuenta; entre 32 y 47, estalla
+C 0x8A2E el sonido 7
+L 0x8A33 bomba_estalla             Estallando: color 6
+L 0x8A3C bomba_acaba
+L 0x8A4B bomba_estallido           El dibujo del estallido, cambia cada 4 cuadros
+L 0x8A57 coche_mueve               El coche: el rebote de los bordes, la palanca (0xE180: 1-8) gira y lo mueve a los lados
+L 0x8A7A coche_armas               El disparo y la bomba
+L 0x8A80 coche_palanca
+L 0x8A90 coche_direccion           Segun la palanca
+L 0x8AB8 coche_dir7
+L 0x8ABD coche_dir6
+L 0x8AC2 coche_dir4
+L 0x8AC7 coche_dir3
+L 0x8ACC coche_dir2
+L 0x8AD1 coche_a_derecha           Un pixel a la derecha (hasta X 0xAC), si toca
+L 0x8AE0 coche_a_izquierda         Un pixel a la izquierda (desde X 4), si toca
+L 0x8AEF coche_arriba              Arriba: acelera (un cuadro de cada dos) y mira hacia arriba, el dibujo 0
+L 0x8B00 coche_arriba_va
+L 0x8B07 coche_derecha             Mira a la derecha: el dibujo 8
+L 0x8B0F coche_abajo               Abajo: frena dos veces y mira hacia abajo, el dibujo 0x0C
+L 0x8B22 coche_izquierda           Mira a la izquierda: el dibujo 0x10
+L 0x8B2A coche_suelta              Sin palanca: 0xE1C3 = 3 y la velocidad baja una vez
+L 0x8B34 coche_mira                A donde mira (0xE197)
+L 0x8B37 coche_y                   La Y del coche segun la velocidad (0x60 + velocidad / 8)
+L 0x8B4F velocidad_pinta           La velocidad (0xE190-0xE192, tres cifras) en la fila 12, columna 26
+L 0x8B5B bombas_pinta              Las bombas que quedan (BCD) en la fila 5, columna 30
+C 0x8B5F las decenas
+C 0x8B6B las unidades
+L 0x8B73 frena                     La velocidad baja: las cifras (0xE190-0xE192) y el binario (0xE194); el tono del motor (0xE1C4) baja
+C 0x8B73 las unidades...
+C 0x8B7A ...las decenas...
+C 0x8B7E ...las centenas: parado?
+L 0x8B83 frena_unidad
+L 0x8B84 frena_binario
+L 0x8BA3 frena_tono
+L 0x8BB1 frena_tono_pon
+L 0x8BB7 frena_decena
+L 0x8BBD frena_centena
+L 0x8BC6 acelera                   La velocidad sube: mas despacio cuanto mas corre; con el coche girado no pasa de 240; el tono del motor sube
+L 0x8BEE acelera_va
+L 0x8C03 acelera_cifra
+L 0x8C1B acelera_tono
+L 0x8C24 acelera_tono_pon
+L 0x8C2A paso_lado                 NZ cada tantos cuadros segun la velocidad: el coche se mueve a los lados mas deprisa cuanto mas corre
+L 0x8C43 paso_lado_no
+L 0x8C45 avance                    La carretera avanza: cada tantos cuadros segun la velocidad, una fila nueva, un punto y la distancia (0xE19C)
+L 0x8C5F avance_2
+L 0x8C69 avance_3
+L 0x8C78 avance_4
+L 0x8C7E avance_lento
+L 0x8C96 avance_5
+L 0x8CA0 avance_6
+L 0x8CA6 avance_7
+L 0x8CAC avance_8
+L 0x8CB2 avance_9
+L 0x8CB8 avance_10
+L 0x8CBC avance_fila
+L 0x8CC0 avance_punto              Un punto, salvo en la demostracion
+L 0x8CCB avance_distancia          La distancia, uno mas; la bomba baja con la carretera
+L 0x8CE0 avance_coches             Los diez coches bajan con la carretera
+L 0x8CE6 avance_coche
+L 0x8CF2 fila_nueva                Una fila nueva de la carretera (0xE800): la de la zona, el puente de la zona 2, y los tramos de 0xE188, 0xE1A8 y 0xE1B0
+L 0x8D04 fila_copia
+L 0x8D0E fila_otra                 Una fila si y otra no
+L 0x8D13 fila_puente               La zona 2: el agua (0x6D) y 5 casillas del puente (0x939D, 27 pasos)
+L 0x8D18 fila_puente_agua
+L 0x8D2F fila_puente_paso
+L 0x8D32 fila_puente_x5
+L 0x8D3A fila_puente_pon
+L 0x8D43 fila_tramo1               El primer tramo (0xE188): casillas que se copian; cuando se acaba, el siguiente (0x8E5F)
+L 0x8D55 fila_tramo1_va
+L 0x8D87 fila_tramo1_sig
+L 0x8D8A fila_tramo2               El segundo (0xE1A8), ocho filas de cada dibujo; cuando se acaba, el siguiente (0x8EB2)
+L 0x8DC8 fila_tramo3               El tercero (0xE1B0), hacia atras; cuando se acaba, el siguiente (0x8EDD)
+L 0x8E06 carretera_vram            La carretera a la pantalla: la fila nueva entra arriba en el anillo de 0xE8C0 y las 24 filas van a la tabla de nombres por el puerto del VDP
+C 0x8E06 el puerto del VDP: la BIOS lo dice en 0x0006...
+C 0x8E09 ...mas 1: el de control
+C 0x8E0C la direccion 0x1800, para escribir (0x58)
+C 0x8E12 el anillo, una fila arriba
+C 0x8E1C da la vuelta?
+C 0x8E2A la fila nueva, arriba del anillo
+C 0x8E36 desde la fila 0, columna 1
+C 0x8E39 24 filas
+L 0x8E3F carretera_fila_vram       Una fila: SETWRT y 24 bytes por el puerto
+C 0x8E40 SETWRT
+C 0x8E43 el puerto de datos
+L 0x8E49 carretera_byte
+C 0x8E4F se sale del anillo?
+L 0x8E57 carretera_vram_sig        La fila siguiente de la pantalla
+L 0x8E5F tramo1_sig                El tramo siguiente de la lista de la zona (0xE18D): 0xFE una espera, 0xFF vuelve al principio, 0xE0-0xFD con repeticiones; si no, la columna y el dibujo
+C 0x8E5F la lista
+C 0x8E66 0xE0 o mas: una orden
+C 0x8E72 las repeticiones
+L 0x8E7C tramo1_dibujo             El dibujo: cuantas casillas, cuantas filas y desde donde
+L 0x8E9C tramo1_espera             0xFE: filas sin nada
+L 0x8EA6 tramo1_vuelta             0xFF: otra vez desde el principio (0x9DAB)
+L 0x8EB2 tramo2_sig                El tramo siguiente de la segunda lista (0xE1A6): 6 bytes; 0xFF al principio, 0xFE salta
+L 0x8EBE tramo2_copia
+L 0x8ECA tramo2_vuelta
+L 0x8ED6 tramo2_salta
+L 0x8EDD tramo3_sig                Lo mismo con la tercera lista (0xE1AE)
+L 0x8EE9 tramo3_copia
+L 0x8EF5 tramo3_vuelta
+L 0x8F01 tramo3_salta
+L 0x8F08 coche_baja                Un coche en el estado 2 baja 8 pixeles con la carretera
+L 0x8F17 gasolina_llena            La gasolina a 100 y su copia
+L 0x8F32 zona_pinta                El numero de la zona en la fila 15, columna 29
+L 0x8F3B ram_sprites               0xE100-0xF07F a cero y los 32 sprites (de 16 bytes, desde 0xE300) a Y = 0xF0
+L 0x8F41 ram_sprites_borra
+L 0x8F51 ram_sprites_fuera
+L 0x8F57 pantalla_borra            La pantalla con la casilla 0x10 (espacio) y los sprites fuera
+L 0x8F67 pantalla_borra_sprites
+L 0x8F70 colores_juego             Los colores: todo a 0xF0 y los de las casillas 0x40 en adelante (0xAE00, 0xB600) en los tres tercios
+L 0x8F98 letras                    Las letras de la BIOS: 0x180 bytes desde 0x1D3F (los caracteres 0x30-0x5F de la fuente, que empieza en 0x1BBF) a la casilla 0 del tercio DE
+L 0x8F9E vram_tercio               LDIRVM y DE al tercio siguiente
+L 0x8FAF casillas_a800             Las casillas de 0xA800 (0x680 bytes) en el tercio DE
+L 0x8FB7 casillas_b000             Las de 0xB000
+L 0x8FBF ldirvm                    LDIRVM
+L 0x8FC2 color8                    FILVRM de 8 bytes
+L 0x8FC8 colores_ae00              Los colores de 0xAE00 (512 bytes)
+L 0x8FD0 colores_b600              Los colores de 0xB600 (384 bytes)
+L 0x8FD8 sprites_dibujos           Los dibujos de los sprites (0xB800, 2 KB) a 0x3800
+L 0x8FE3 sonido_calla_pide         Pide a la interrupcion que calle el sonido (0xE089 = 0xFF)
+L 0x8FE9 sprites_vram              Los 32 sprites a 0x1B00, de 0xE100; antes, la tabla de la RAM (16 bytes por sprite, desde 0xE300) se pasa a 4 bytes por sprite, en otro orden
+C 0x8FF5 los dos primeros (el coche)
+C 0x9000 los 28 de 0xE340
+C 0x9008 y los dos de 0xE320 al final
+L 0x9013 sprites_copia             B sprites: 4 bytes de cada 16
+L 0x9021 interrupcion              La interrupcion (H.TIMI): callar si se pide, el motor del coche en el canal A, los efectos, las cuentas de cuadros y los mandos
+C 0x9021 hay que callar?
+C 0x9028 calla
+C 0x902F en partida?
+C 0x903D 0xE2C1: los canales B y C...
+C 0x9045 ...a volumen 0
+L 0x9051 motor                     El motor: si va (0xE1C3), el canal A a volumen 15 con el tono de 0xE1C4, que tiembla
+C 0x9057 el canal A, solo tono
+C 0x9061 el registro 7
+C 0x9064 volumen 15 en el canal A
+C 0x906B la parte alta del tono...
+C 0x906F ...en el registro 1
+C 0x9074 parado?
+C 0x907A casi a tope: tiembla poco
+L 0x908B motor_parado              Parado: el tono 0x3F8 y un temblor mas grande
+L 0x909D motor_temblor_cero
+L 0x90A1 motor_temblor             El tono menos el temblor
+L 0x90A8 motor_tono
+L 0x90AB motor_pon                 La parte baja del tono en el registro 0
+L 0x90B0 interrupcion_cuentas      Los efectos y las dieciseis cuentas de cuadros (0xE010-0xE01F), una mas cada una
+L 0x90B8 interrupcion_cuenta
+C 0x90BC en partida?
+C 0x90C2 el boton 1 del mando: 0xE040 (recien pulsado) y 0xE046 (sostenido)
+C 0x90CD el boton 2 del mando: 0xE041 y 0xE047
+C 0x90D8 o la barra y GRAPH en el teclado
+L 0x90E1 palanca                   La palanca: los cursores o el mando 1 (GTSTCK 0 y 1), en 0xE180
+L 0x90F6 demostracion              En la demostracion: cada 48 cuadros una direccion al azar (1, 2, 3 cambia a 8) y dispara o tira una bomba
+L 0x910E demostracion_dir
+L 0x9114 demostracion_pon
+L 0x9122 demostracion_bomba
+L 0x9127 demostracion_palanca      Sin demostracion: la palanca de verdad
+L 0x912C boton_empieza             El boton de empezar (0xE043): la barra o el boton 1
+L 0x9149 boton_mando               GTTRIG A: lo recien pulsado en (DE) y lo sostenido en (HL)
+L 0x914D boton_mira
+L 0x914F boton_suelto
+L 0x9152 boton_nuevo
+L 0x9159 boton_barra               La barra (fila 8, bit 0)
+L 0x9163 botones_teclado           La barra como boton 1 y GRAPH (fila 6, bit 2) como boton 2
+L 0x917B marcador_puntos           SCORE y HISCORE en el marcador (6 cifras)
+L 0x918D puntos                    Los puntos + A (BCD, tres bytes); a 999999 se quedan
+L 0x919A puntos_centenas
+L 0x91B7 puntos_tope
+L 0x91BC puntos_pinta
+L 0x91C3 puntos_cifras             Las seis cifras sueltas de los puntos (0xE001)
+L 0x91CB puntos_cifra
+L 0x91DE record                    Si los puntos pasan del record, record nuevo
+L 0x9437 cerca_y                   ¿Toca en Y? A = la Y de IY menos la del coche (IX): C si queda entre B y C (con signo, de B a C)
+L 0x943D cerca_mira
+L 0x9444 cerca_no
+L 0x9446 cerca_x                   Lo mismo en X
+L 0x944E cerca_bomba_y             Contra la bomba (IX+0x30), en Y
+L 0x9456 cerca_bomba_x             ...en X
+L 0x945E cerca_disparo_y           Contra el disparo (IX+0x20), en Y
+L 0x9466 cerca_disparo_x           ...en X
+L 0x946E cosa5                     Los tipos 5 en adelante: un sprite (dibujo 0x4C, blanco); la bomba que lo toca lo hace estallar; el coche que lo toca, 0xE183 = 4
+L 0x9480 cosa5_bomba
+L 0x949C cosa5_coche
+L 0x94BD cosa5_fuera
+L 0x94C1 cosa5_sigue
+L 0x94C4 cosa4                     El tipo 4: sale por arriba a un lado al azar (dibujo 0x3C, color 1 o 5); si el coche lo toca, frena 96 veces
+L 0x94E5 cosa4_color
+L 0x94E9 cosa4_sitio
+L 0x94F0 cosa4_toca
+L 0x950B cosa4_frena
+L 0x9513 cosa4_sigue
+L 0x9516 lado_azar                 IY+9 = 0 o 1 al azar (el lado)
+L 0x951E lado_cambia               IY+9 al reves
+L 0x9529 lado_cero
+L 0x952E coche_rebote              Los empujones: IY+0x0B en Y y IY+0x0E en X durante 8 cuadros; y los sprites del coche en su sitio (el camion lleva cuatro)
+L 0x954C coche_rebote_x
+L 0x956A coche_sprites
+L 0x957D coche_sprites_y
+L 0x9590 coche_sprites_x
+L 0x9593 coche_fuera               Si sale por abajo, el bloque a cero
+L 0x95AA coche_fuera_otro
+L 0x95C1 coche_fuera_32
+L 0x95C8 coche_fuera_camion
+L 0x95D0 coche_fuera_dos
+L 0x95D4 coche_fuera_uno
+L 0x95D9 borra_b                   B bytes de IY a cero
+L 0x95DC borra_b_byte
+L 0x95E2 coche_otro                Un coche de los otros (0xE360, 32 bytes): por su tipo (IY+4): 1-2 coches, 3 el camion, 4 y 5 o mas cosas sueltas
+C 0x95E2 no hay?
+C 0x95E7 5 o mas
+C 0x95EC 4
+C 0x95F1 ya ha salido?
+C 0x95F8 sale
+C 0x95FE el camion?
+C 0x9605 el camion: cuatro sprites (0x24-0x30), azul claro y negro, abajo
+C 0x9629 su velocidad: 16 menos que el coche
+L 0x963B coche_otro_sale           Un coche (dibujos 0x14 y 0x18): sale por arriba o por abajo segun las velocidades
+C 0x964B el coche va despacio?
+C 0x9658 hay otro saliendo?
+L 0x9669 coche_otro_abajo
+L 0x966D coche_otro_velocidad      Su velocidad: la del coche menos algo al azar; y su X: la del borde de la carretera en la fila de arriba (0x3D)
+L 0x967C coche_otro_borde
+L 0x9684 coche_otro_borde_izq
+L 0x968E coche_otro_borde_der
+L 0x9694 coche_otro_borde_der_va
+L 0x969D coche_otro_arriba         Sale por arriba, con mas velocidad
+L 0x96AB coche_otro_rapido
+L 0x96B4 coche_otro_vel
+L 0x96C9 coche_otro_tipo           Los que corren mucho: unos pasan a ser del tipo 2 (los que atacan, desde la zona 5)
+L 0x96DD coche_otro_tipo2
+L 0x96E7 coche_otro_color
+L 0x96F3 coche_otro_fila
+L 0x970C coche_otro_x              La X del coche: la columna del borde x 8 + 8
+L 0x970E coche_otro_x_suma
+L 0x9718 coche_otro_mueve          Ya en la carretera: baja o sube segun su velocidad contra la del coche, se aparta del borde, y lo que toca
+L 0x972F coche_otro_choque         Con el coche chocado o al acabar la zona, todos bajan 2 pixeles
+L 0x9737 coche_otro_contra         Mas rapido o mas lento que el coche: un pixel cada 1, 2, 3 o 4 cuadros segun la diferencia
+L 0x9750 coche_otro_ritmo
+L 0x9752 coche_otro_baja           Un pixel abajo (el camion, sus cuatro sprites)
+L 0x9768 coche_otro_ritmo3
+L 0x976D coche_otro_ritmo2
+L 0x9772 coche_otro_mas_rapido
+L 0x9781 coche_otro_ritmo_b
+L 0x9783 coche_otro_sube           Un pixel arriba
+L 0x9799 coche_otro_ritmo3b
+L 0x979E coche_otro_ritmo2b
+L 0x97A3 coche_otro_persigue       El tipo 2, a la altura del coche, se va hacia su lado
+L 0x97C0 coche_otro_persigue_izq
+L 0x97C4 coche_otro_carretera      Busca el borde de la carretera en su fila y se mantiene dentro, un pixel a cada lado
+L 0x97D1 coche_otro_carretera_va
+L 0x97E0 coche_otro_lado
+L 0x97EC coche_otro_borde_d
+L 0x97F5 coche_otro_borde_i
+L 0x97F7 coche_otro_borde_i_va
+L 0x9800 coche_otro_columna
+L 0x9802 coche_otro_columna_x8
+L 0x9815 coche_otro_margen
+L 0x9817 coche_otro_compara
+L 0x982E coche_otro_a_izq
+L 0x983B coche_otro_choca_borde    Si toca una casilla de borde (0x57 o mas), rebota hacia el otro lado
+L 0x984A coche_otro_rebota
+L 0x985A coche_otro_rebota_izq
+L 0x9860 coche_otro_mira_der
+L 0x986F coche_otro_sin_rebote
+L 0x9873 coche_otro_pinta          Los empujones y los sprites; despues, el camion o los coches
+L 0x9890 camion                    El camion: cambia de lado cada tanto al azar; desde la zona 4, cuando el coche esta en su columna, suelta algo por detras (+0x60)
+L 0x98A8 camion_suelta
+L 0x98DB camion_tocado             Tocado dos veces, parpadea
+L 0x98F2 camion_disparo            El disparo rebota en el (el sonido 6)
+L 0x9910 camion_bomba              Tres bombas lo destrozan: el sonido 1 y 500 puntos
+L 0x995B camion_toca               Si toca al coche, 0xE183 = 4
+L 0x996F coche_empuja              Un coche contra el de 0xE3E0: se empujan y cambian de lado
+L 0x9983 coche_empuja_y
+L 0x9999 coche_empuja_arriba
+L 0x999F coche_empuja_vel
+L 0x99AD coche_contra_otros        Contra los coches que vienen detras en la lista
+L 0x99B6 coche_contra_va
+L 0x99C4 coche_contra_uno
+L 0x99D2 coche_bomba               La bomba que lo toca lo destroza (el sonido 1 y sus puntos)
+L 0x99EC coche_destrozado
+L 0x9A06 coche_bombas_mas          El tipo 2 destrozado da 20 bombas mas y 100 puntos; los otros, 50
+L 0x9A12 coche_disparo             El disparo: tres en el mismo coche lo destrozan (el sonido 6 en cada uno)
+L 0x9A3A coche_parpadea            Tocado dos veces, parpadea
+L 0x9A4D coche_lado                Cada 64 cuadros, el tipo 2 cambia de lado
+L 0x9A65 coche_choca               El coche del jugador contra este: si va muy deprisa (0xE194 >= 0x82) choca (0xE183 = 4); si no, se empujan
+L 0x9A74 coche_choca_debajo
+L 0x9A83 coche_choca_encima
+L 0x9A92 empuje1
+L 0x9AA0 empuje_a_der
+L 0x9AA3 empuje2
+L 0x9AB0 empuje_a_izq
+L 0x9AB3 empuje3
+L 0x9AC2 empuje4
+L 0x9AD1 empuja_der                El coche hacia la derecha y frena 5 veces
+L 0x9AD5 empuja_frena
+L 0x9ADB empuja_frena_uno
+L 0x9AE3 empuja_izq                Hacia la izquierda
+L 0x9AE9 empujado_abajo            El otro, abajo
+L 0x9AED empujado_cuenta
+L 0x9AF2 empujado_arriba           El otro, arriba
+L 0x9AF8 empujado_der
+L 0x9B00 empujado_fin
+L 0x9B05 empujado_izq
+L 0x9B0F choque_fuerte             Choca: 0xE183 = 4 y el otro estalla
+L 0x9B19 coche_estalla             El estallido: dibujos 0x34/0x38 cada 4 cuadros, 32 cuadros y fuera
+L 0x9B2B coche_estalla_va
+L 0x9B47 paso_coche                NZ cada tantos cuadros segun la velocidad del coche (IY+6)
+L 0x9B61 paso_coche_no
+L 0x9B63 coches_se_empujan         Dos coches de la lista que se tocan se empujan y se cambian la velocidad
+L 0x9B8E empujon
+L 0x9B96 empujon_pon
+L 0x9BB7 empujon2
+L 0x9BBD empujon2_va
+L 0x9BC7 empujon3
+L 0x9BDC empujon4
+L 0x9BE4 salen_coches              Cada tanto salen coches: el uno, el dos, el camion (el tres, en las zonas 3+), uno del tipo 4 y otro del 5 (zonas 6+); mas a menudo cuanto mas alta la zona
+L 0x9BF7 salen_coches_rapido
+L 0x9C1E salen_coches_cuenta
+L 0x9C2B salen_coches_marca
+L 0x9C37 salen_coches_espera
+L 0x9C43 salen_coches_zona
+L 0x9C62 sale_coche2
+L 0x9C7B sale_coche3
+L 0x9C8B sale_coche4
+L 0x9CA6 sale_coche5
+L 0x9CBC salen_coches_fin
+L 0x9CBD presentacion              La presentacion: CASIO se abre en el centro de la pantalla fila a fila (0x9D37) con su sonido; el boton la corta
+L 0x9CCE presentacion_cuadro
+L 0x9D04 presentacion_sig
+L 0x9D06 presentacion_fin
+L 0x9D0B presentacion_espera
+L 0x9D19 presentacion_corta
+D 0x9D24 0x9D37 casio_casillas  Las casillas de CASIO en grande: un espacio, ocho de arriba, otro espacio, ocho de abajo y otro
+F 0x9D24 1,8,1,8,1
+L 0x9D37 presentacion_filas        Un paso de la presentacion: CASIO en dos filas que crecen desde el centro (0x9D25, 0x9D2E), hasta 9 casillas
+L 0x9D41 presentacion_arriba
+L 0x9D62 presentacion_abajo
+L 0x9D77 presentacion_izq
+L 0x9D80 presentacion_izq_va
+L 0x9D93 presentacion_der
+L 0x9D9B presentacion_der_va
+L 0xBAC8 efecto_pide               Pide el efecto A (0xE2C2), solo en partida: si ya hay uno, se queda el de numero mas bajo
+L 0xBAD2 pide_va
+L 0xBAD9 pide_pon
+L 0xBADB musica_pide               Pide la musica A (0xE2BE), con la misma regla
+L 0xBAE0 sonido                    El sonido de cada cuadro (desde la interrupcion): una musica nueva o un efecto nuevo empiezan; los tres canales (0xE280, 0xE292, 0xE2A4, 18 bytes) siguen
+L 0xBAF8 sonido_musica_va
+L 0xBB00 sonido_efecto_va
+L 0xBB06 sonido_canal_a            El canal A: su bloque a 0xE2C3, un paso y de vuelta
+L 0xBB12 sonido_canal_a_va
+L 0xBB34 sonido_canal_b            El canal B
+L 0xBB3F sonido_canal_b_va
+L 0xBB6D sonido_canal_c            El canal C
+L 0xBBA1 canal_a_trabajo           Copia el bloque del canal (HL, 18 bytes) a 0xE2C3
+L 0xBBA4 copia18
+L 0xBBAA canal_de_trabajo          Y de vuelta a DE
+L 0xBBAF canal_paso                Un paso del canal de trabajo: si la nota sigue, nada; si no, el byte siguiente de la pieza: una nota (menos de 0xF0) o una orden
+L 0xBBBB canal_lee
+L 0xBBD7 canal_mezcla
+L 0xBBE0 canal_mezcla_corre
+L 0xBBE3 canal_mezcla_pon
+L 0xBBEC canal_orden               Las ordenes: 0xF0, 0xFF el final (1), 0xF7 (2), 0xFE...
+L 0xBBF6 canal_orden_f7
+L 0xBBFD canal_orden_fe
+L 0xBC06 canal_orden_fd            0xFD n: la marca 1 y cuantas veces
+L 0xBC15 canal_orden_fc            0xFC: vuelve a la marca 1 si quedan
+L 0xBC21 canal_orden_fc_vuelve
+L 0xBC26 canal_orden_fb            0xFB n: la marca 2
+L 0xBC33 canal_orden_sigue         Sigue leyendo
+L 0xBC38 canal_orden_fa            0xFA: vuelve a la marca 2
+L 0xBC44 canal_orden_fa_vuelve
+L 0xBC49 canal_orden_f9            0xF9 n: la marca 3
+L 0xBC58 canal_orden_f8            0xF8 (o mas): vuelve a la marca 3
+L 0xBC60 canal_orden_f8_vuelve
+L 0xBC65 canal_ruido               0xF0: una nota de ruido (el periodo y su barrido) y su duracion; el canal, a ruido en el registro 7
+L 0xBC7A ruido_barrido             El barrido del ruido: cada tantos cuadros, el periodo + el paso, unas cuantas veces
+L 0xBCAC canal_numero              El numero de canal (0xE2D5) y un paso
+L 0xBCB3 prioridad                 C si el sonido de (HL+1) es de numero menor que el de (HL)
+L 0xBCBA canal_cuenta              La nota: la duracion baja; el volumen baja cada tanto (la envolvente); a 0, A = 1
+L 0xBCDD canal_cuenta_sigue
+L 0xBCDF canal_cuenta_15
+L 0xBCEA canal_cuenta_fin
+L 0xBCF0 ruido_pon                 El ruido: su periodo fijo o con barrido (periodo, cuantas veces, cada cuanto, el paso)
+L 0xBD15 ruido_barre
+L 0xBD31 nota_pon                  Una nota: el byte de arriba es la duracion (0xBD82, o el byte siguiente con 0xE), el de abajo el volumen (15: la mitad)
+L 0xBD4C nota_duracion
+L 0xBD50 nota_duracion_byte
+L 0xBD52 nota_volumen
+L 0xBD67 nota_cuenta
+L 0xBD72 nota_periodo              El periodo: un byte (menos de 0x10, la parte alta) y otro
+L 0xBD7D nota_periodo_bajo
+D 0xBD82 0xBD90 duraciones  Las 14 duraciones de las notas (de 128 a 1 cuadros)
+F 0xBD82 14
+L 0xBD90 psg_c                     WRTPSG: el registro C
+L 0xBD92 psg
+L 0xBD95 psg_b                     El registro B
+L 0xBD99 psg_b1                    El registro B + 1
+L 0xBD9E psg_mezcla                El registro 7
+L 0xBDA3 psg_ruido                 El registro 6
+L 0xBDA8 musica_empieza            Una musica: los tres canales de la tabla 0xBA80 (6 bytes por musica)
+L 0xBDC6 sonido_mezcla
+L 0xBDCF musica_acaba              El canal A acaba: si hay otra musica pedida, empieza; si no, todo callado
+L 0xBDD9 sonido_calla              Todo callado: el registro 7 a 0xFF y los canales (0xE280, 67 bytes) a cero
+L 0xBDE4 borra_b2
+L 0xBDEA canal_a_calla
+L 0xBDEF mezcla_pon
+L 0xBDF5 efecto_empieza            Un efecto: los canales B y C de la tabla 0xBAA4 (4 bytes por efecto)
+L 0xBE10 efecto_acaba              El canal B acaba: otro efecto pedido o los canales B y C callados
+L 0xBE28 canales_bc                Los canales B y C desde la tabla HL
+L 0xBE47 canal_a_tabla             El canal A desde la tabla
+D 0xBA80 0xBAA4 musicas  Las seis musicas: los tres canales de cada una (0 calla; 1, 2... 5)
+F 0xBA80 w3
+D 0xBAA4 0xBAC8 efectos  Los nueve efectos: los canales B y C de cada uno
+F 0xBAA4 w2
+L 0xBFA0 presentacion_final        El final de la presentacion: CASIO entero en sus dos filas y el fondo (0x9DA0) arriba y abajo
+D 0x8350 0x8351 byte_8350  Un byte (0xE4) entre un "jr" y la rutina siguiente, al que no se llega
+D 0x84E9 0x851A mapa_marcas  Las marcas del mapa para cada zona ya hecha: 7 bytes por zona, leidos hacia atras desde 0x851A (las casillas del trazo y su sitio)
+F 0x84E9 7
+D 0x9210 0x927E mapa_rle  El mapa del recorrido, comprimido: un byte con la mitad alta es una casilla; con la mitad alta a 0, cuantas veces y la casilla
+F 0x9210 16
+D 0x927E 0x9284 texto_casio  CASIO en el titulo (6 casillas rojas)
+D 0x9284 0x92BC titulo_car  CAR en letras grandes: 4 filas de 14
+F 0x9284 14
+D 0x92BC 0x933A titulo_fighter  FIGHTER en letras grandes: 5 filas de 25 (la ultima mas corta)
+F 0x92BC 25
+D 0x933A 0x934C texto_push  PUSH TRIG:1 OR SPC
+D 0x934C 0x9362 texto_copyright  COPYRIGHT 1985 (c) CASIO
+D 0x9362 0x9367 texto_empty  EMPTY (sin gasolina)
+D 0x9367 0x936D bytes_9367  Seis cifras (1, 0, 0, 0, 0, 0) que nadie lee: el record empieza en 10000 desde INIT
+D 0x936D 0x939D textos_marcador  El marcador: HISCORE (que se solapa con SCORE), SCORE, BOMB, FUEL y su luz, los recuadros y SPEED
+F 0x936D 2,5,4,6,14,14,2
+D 0x939D 0x9424 puente  El puente de la zona 2: 27 pasos de 5 casillas
+F 0x939D 5
+D 0x9424 0x9429 bytes_9424  Cinco bytes detras del puente
+D 0x9429 0x9432 texto_game_over  GAME OVER
+D 0x9432 0x9437 texto_start  START
+D 0x9DA0 0x9DA8 presentacion_fondo  Ocho espacios: el fondo de la presentacion
+D 0x9DA8 0x9DAB bytes_9da8  Tres bytes sin lectura directa
+D 0x9DAB 0x9DDB tablas_tramos  Las listas de tramos de cada zona: la primera (0x9DAB), la segunda (0x9DBB) y la tercera (0x9DCB), una palabra por zona
+F 0x9DAB w8
+D 0x9DDB 0xA800 tramos  Las listas de tramos de la carretera y sus dibujos (las casillas de cada fila), por zona
+F 0x9DDB 16
+D 0xA800 0xAE00 casillas_juego  Las casillas 0x30-0xEF del juego (los dibujos, 8 bytes); la carga de 0x680 bytes sigue hasta 0xAE80: las 16 ultimas son los primeros bytes de 0xAE00
+F 0xA800 8
+D 0xAE00 0xB000 casillas_titulo  Las casillas 0x40-0x7F del titulo y la presentacion
+F 0xAE00 8
+D 0xB000 0xB600 colores_juego  Los colores de las casillas del juego (0x680 bytes desde aqui: siguen por 0xB600); en 0xB168, los de los bordes de la carretera
+F 0xB000 8
+D 0xB600 0xB780 colores_titulo  Los colores de las casillas del titulo
+F 0xB600 8
+D 0xB780 0xB800 nombres_zonas  Los nombres de las zonas: la tabla y los textos que se escriben letra a letra en el mapa
+F 0xB780 w9,12
+D 0xB800 0xBA80 sprites  Los dibujos de los sprites; la copia de 2 KB sigue por las tablas, el codigo y la musica hasta el final de la ROM
+F 0xB800 16
+D 0xBE55 0xBE59 bytes_be55  Cuatro bytes antes de la primera pieza
+D 0xBE59 0xBFA0 piezas  Las piezas de las musicas y los efectos: notas (duracion y volumen, y el periodo) y ordenes desde 0xF0
+F 0xBE59 16
+D 0xBFFD 0xC000 bytes_bffd  Los tres ultimos bytes de la ROM
+C 0x8032 un byte a 0
+C 0x8035 256 bytes...
+C 0x8038 ...17 veces
+C 0x8045 el "jp" en el gancho
+C 0x804C BAKCLR = 0
+C 0x804F BDRCLR = 0
+C 0x8053 FORCLR = 0xFF
+C 0x805C en el primer tercio...
+C 0x805F ...el segundo...
+C 0x8062 ...y el tercero
+C 0x8066 el color de la casilla 0x10 (el espacio): 0, en el primer tercio...
+C 0x806C ...el segundo...
+C 0x8072 ...y el tercero
+C 0x8080 B = el valor
+C 0x8081 C = el registro 1
+C 0x8088 el record: 010000 (las cifras 0xE094...)
+C 0x808B ...y 0xE08F
+C 0x808E con las interrupciones
+C 0x808F el sonido, callado
+C 0x8095 los colores del titulo
+C 0x809B la presentacion de CASIO
+C 0x80A4 seis casillas
+C 0x80AA desde la fila 3, columna 9
+C 0x80AD cuatro filas
+C 0x80B0 14 casillas
+C 0x80B4 las cuatro
+C 0x80B8 desde la fila 8, columna 4
+C 0x80BC 25 casillas
+C 0x80C0 las cinco
+C 0x80C8 18 letras (LDIRVM)
+C 0x80D3 22 letras
+C 0x80DC (la cuenta de cuadros 0xE018)
+C 0x80DF los cuadros que pasan
+C 0x80E4 aun no: el boton?
+C 0x80EB 0-3...
+C 0x80EE ...+ 1: la zona
+C 0x80F1 a la zona
+C 0x80F3 el boton
+C 0x80F7 no: espera
+C 0x80FA ya visto
+C 0x80FD sin demostracion
+C 0x8100 la vuelta 0
+C 0x8104 la zona 1
+C 0x810D seis bytes (0xE001: las cifras de los puntos)
+C 0x8110 a cero
+C 0x8116 tres bytes (0xE00C: los puntos en BCD)
+C 0x811F 16 bytes
+C 0x8135 + la zona
+C 0x8138 el color de la carretera...
+C 0x8139 ...+ 2: el de los bordes de la RAM
+C 0x813E 12 parejas
+C 0x8140 (A, C)
+C 0x8145 el color y la casilla siguientes
+C 0x8147 otras 12
+C 0x814D la zona
+C 0x8152 el color...
+C 0x8153 ...en D
+C 0x8157 8 bytes de color en el primer tercio (casilla 0x6D)
+C 0x815A el segundo
+C 0x8160 el tercero
+C 0x8168 la mitad alta, abajo
+C 0x8170 112 bytes
+C 0x8172 en el primer tercio
+C 0x8175 el segundo
+C 0x817D el tercero
+C 0x818E la lista de la zona
+C 0x8195 el primer tramo
+C 0x819B la lista de la zona
+C 0x81A2 el primer tramo
+C 0x81A8 la lista de la zona
+C 0x81AF el primer tramo
+C 0x81B8 una fila nueva de carretera
+C 0x81BC 24 filas: la pantalla llena
+C 0x81C1 la zona 1?
+C 0x81C8 START
+C 0x81CB 5 casillas
+C 0x81CE el marcador
+C 0x81D1 la X del coche: 0x60
+C 0x81D5 la de su segundo sprite
+C 0x81D9 la Y: 0x60
+C 0x81DD la del segundo sprite
+C 0x81E1 el dibujo 0 (mirando arriba)
+C 0x81E5 color 4
+C 0x81E9 el segundo sprite: dibujo 4...
+C 0x81ED ...color 1
+C 0x81F1 20 bombas (BCD)
+C 0x81FB en el marcador
+C 0x8202 la cuenta de cuadros a 0
+C 0x8209 al choque
+C 0x8210 al final de la zona
+C 0x8213 la interrupcion ha contado un cuadro?
+C 0x8219 no: espera
+C 0x8220 los diez coches
+C 0x8223 los puntos
+C 0x8226 la gasolina
+C 0x8229 el coche
+C 0x822C los sprites a la VRAM
+C 0x822F la carretera avanza
+C 0x8232 la marca de la distancia
+C 0x8235 los bordes
+C 0x823B la zona
+C 0x8241 B = su distancia
+C 0x8245 aun no
+C 0x8249 la zona 3?
+C 0x8250 0xE8 o mas
+C 0x8254 la zona se acaba
+C 0x825A en partida, sigue
+C 0x8260 la demostracion: sin boton, sigue
+C 0x8266 14 casillas
+C 0x8269 LDIRVM
+C 0x826D la fila siguiente
+C 0x8274 25 casillas
+C 0x8279 8 bytes...
+C 0x827C ...FILVRM
+C 0x8281 diez coches
+C 0x8288 uno
+C 0x828F el siguiente (32 bytes)
+C 0x8294 DISSCR
+C 0x8297 la RAM de los sprites
+C 0x829A la pantalla en blanco
+C 0x829D la gasolina llena
+C 0x82A3 6 bytes
+C 0x82A6 a cero
+C 0x82AA sin palanca
+C 0x82AD las casillas del juego, desde la 0x30...
+C 0x82B0 ...en el primer tercio...
+C 0x82B6 ...y el tercero
+C 0x82B9 sus colores, desde 0x2180
+C 0x82C4 y los dibujos de los sprites
+C 0x82C8 la cuenta a 0
+C 0x82CE en partida?
+C 0x82D1 la demostracion: el boton?
+C 0x82D5 pulsado: vuelve
+C 0x82D6 la cuenta...
+C 0x82D9 ...llega a B?
+C 0x82E0 el byte de la tabla...
+C 0x82E1 ...su mitad alta...
+C 0x82E3 ...con el color C
+C 0x82E4 WRTVRM
+C 0x82EC A...
+C 0x82EE ...y C
+C 0x82F3 la zona...
+C 0x82F6 ...menos 1...
+C 0x82F7 ...x 2
+C 0x82FD la palabra
+C 0x8301 3: sin gasolina...
+C 0x8305 ...aun se mueve?
+C 0x8309 si: sigue hasta pararse
+C 0x830C parado: se acaba
+C 0x830F 1 o 2: el choque
+C 0x8311 los sprites de 0xE440 apartados
+C 0x831A a la gasolina
+C 0x831C el choque a cero...
+C 0x8320 ...y a la carrera (aqui no se llega)
+C 0x8324 el motor callado
+C 0x8327 la musica 5
+C 0x832D la cuenta de la espera
+C 0x8330 el coche parado del todo: sus sprites y su estado
+C 0x833C sin bombas en vuelo...
+C 0x833F ...sin disparo...
+C 0x8342 ...ni nada
+C 0x834E y los sprites apartados
+C 0x8351 la Y de 0xE440 abajo
+C 0x8356 el coche en color 1
+C 0x835A la bomba...
+C 0x835E ...y el disparo, fuera
+C 0x8362 las centenas de la gasolina
+C 0x8366 hay 100?
+C 0x8369 las decenas
+C 0x836B 0?
+C 0x836D diez litros menos
+C 0x8370 100: a 90...
+C 0x8373 ...con las decenas a 9
+C 0x8377 menos de 10...
+C 0x8378 ...las unidades a 0...
+C 0x837A ...y sin gasolina
+C 0x837D en el marcador
+C 0x8380 la velocidad (siete bytes)...
+C 0x8385 ...a cero
+C 0x838A en el marcador
+C 0x838D un cuadro?
+C 0x8395 gastado
+C 0x8397 los sprites
+C 0x839A y los otros coches siguen
+C 0x839D el coche: el estallido, cada 4 cuadros...
+C 0x83A2 ...0x34 o 0x38
+C 0x83A7 la cuenta...
+C 0x83AA ...64 cuadros?
+C 0x83AE sin gasolina?
+C 0x83B4 por donde ha chocado: 1 a la izquierda...
+C 0x83BB ...16 pixeles a la derecha
+C 0x83C0 la X
+C 0x83C6 sin choque
+C 0x83CA el color 0...
+C 0x83D0 ...y otra vez a la salida
+C 0x83D3 2 a la derecha...
+C 0x83D7 ...16 pixeles a la izquierda
+C 0x83DE otro: donde estaba
+C 0x83E3 la velocidad en el marcador
+C 0x83E9 EMPTY
+C 0x83EF el efecto 6
+C 0x83F4 48 cuadros
+C 0x83FC GAME OVER
+C 0x83FF 9 letras
+C 0x8407 la musica 1
+C 0x840A 254 cuadros
+C 0x840F sin demostracion
+C 0x8413 sin partida
+C 0x8419 al titulo
+C 0x841D el motor callado
+C 0x8420 el disparo y la bomba, de color 0
+C 0x8428 la musica 3
+C 0x842E la zona 8?
+C 0x8435 CHECK POINT
+C 0x8438 11 letras
+C 0x8440 en la fila 8, columna 11
+C 0x8446 GOAL
+C 0x8449 un cuadro?
+C 0x8451 gastado
+C 0x8453 la Y, 3 menos
+C 0x845E los otros coches
+C 0x8461 los sprites
+C 0x8464 ha salido por arriba (entre 0xD8 y 0xEB)?
+C 0x846F un cuadro?
+C 0x8477 gastado
+C 0x8479 las unidades de la gasolina
+C 0x847F las decenas
+C 0x8483 las centenas
+C 0x8487 todo 0: la zona siguiente
+C 0x8489 un litro menos
+C 0x848C 10: a 09
+C 0x8492 100: a 099
+C 0x8499 100 puntos por litro
+C 0x849E la gasolina...
+C 0x84A1 ...y los puntos en el marcador
+C 0x84A6 104 cuadros
+C 0x84AB el sonido, callado
+C 0x84AE la zona...
+C 0x84B1 ...siguiente
+C 0x84B3 pasa de 8?
+C 0x84B8 otra vez la 1...
+C 0x84BB ...y una vuelta mas (0xE009)
+C 0x84CE 6 KB de la tabla de colores...
+C 0x84D4 ...a 0xF0
+C 0x84D9 5 casillas
+C 0x84DF 4 casillas
+C 0x84E4 6 casillas
+C 0x851A el byte...
+C 0x851F ...+ 0x18B6
+C 0x8527 no: nada
+C 0x8534 el byte
+C 0x8535 la mitad alta...
+C 0x8538 ...a 0: un tramo
+C 0x853A tal cual
+C 0x853E las 205
+C 0x8542 cuantas...
+C 0x8545 ...la casilla
+C 0x8546 una
+C 0x8548 una menos de las 205
+C 0x8549 una menos del tramo
+C 0x854F el mapa
+C 0x8552 desde la fila 4, columna 7
+C 0x8558 la fila siguiente
+C 0x855A 17 casillas (LDIRVM)
+C 0x8560 una fila mas...
+C 0x8567 ...12?
+C 0x856C la cuenta a 0
+C 0x8572 las zonas hechas
+C 0x8578 de 7 en 7 bytes
+C 0x857E hacia atras
+C 0x8582 tres casillas
+C 0x8585 el sitio...
+C 0x8587 ...en la pantalla
+C 0x858A la casilla
+C 0x858F las tres
+C 0x8592 el sitio del trazo
+C 0x8595 la casilla 0xD7...
+C 0x859F ...y la 0xD8 debajo
+C 0x85A6 la zona siguiente
+C 0x85A9 el sitio del coche en el mapa
+C 0x85AF la Y...
+C 0x85B5 ...y la X
+C 0x85C1 el nombre de la zona
+C 0x85C8 la segunda parte
+C 0x85CD 11 letras
+C 0x85D3 la segunda parte...
+C 0x85D9 ...con su largo delante
+C 0x85E0 las cuentas a 0
+C 0x85E9 cuatro cuadros...
+C 0x85EC ...hasta 32
+C 0x85F3 la pantalla en blanco
+C 0x85FB el efecto 8
+C 0x8601 la letra
+C 0x8602 WRTVRM
+C 0x8607 todas
+C 0x860A el reloj de un cuadro (0xE012)
+C 0x8615 cuatro cuadros?
+C 0x8621 los sprites
+C 0x8625 encendido?
+C 0x862F el color 6
+C 0x8638 el color 0
+C 0x8658 la zona
+C 0x865D lo que vale una marca
+C 0x8660 la distancia
+C 0x8664 cuantas marcas
+C 0x8666 una marca menos...
+C 0x866A ...una mas
+C 0x866E ninguna
+C 0x8670 de 4 en 4 por fila
+C 0x8672 menos 4
+C 0x867D la barra, abajo a la derecha...
+C 0x8680 ...una fila arriba por cada 4
+C 0x8686 la casilla de 1 a 4 marcas (0x3E-0x41)
+C 0x8689 WRTVRM, dos casillas
+C 0x869A la Y entre 8
+C 0x869E la fila de arriba del anillo
+C 0x86A1 24 bytes por fila
+C 0x86A6 da la vuelta?
+C 0x86AA al principio del anillo
+C 0x86B0 la Y del coche: su fila
+C 0x86B7 la columna 1
+C 0x86B9 la casilla
+C 0x86BA 0x6B o 0x6C: el borde recto
+C 0x86C2 0x3C: la gasolinera
+C 0x86C6 de 0x4F a 0x55: el borde en curva
+C 0x86CE la columna siguiente
+C 0x86D6 la curva: 0x56 - la casilla...
+C 0x86DB la X del borde...
+C 0x86E0 ...el coche esta por fuera?
+C 0x86E3 muy deprisa?
+C 0x86EA choca por la izquierda
+C 0x86F1 rebota a la derecha
+C 0x86FB la gasolinera: 8 pixeles
+C 0x8703 encima?
+C 0x870B carga gasolina
+C 0x870F la fila de abajo...
+C 0x8716 desde la columna 24 hacia atras
+C 0x8718 la casilla
+C 0x8721 la gasolinera
+C 0x8725 de 0x56 a 0x5C: el borde en curva
+C 0x872D la columna anterior
+C 0x8735 0x5D - la casilla
+C 0x873A la X del borde
+C 0x873F el coche por fuera?
+C 0x8742 muy deprisa?
+C 0x8749 choca por la derecha
+C 0x8750 rebota a la izquierda
+C 0x8762 encima?
+C 0x876A carga gasolina
+C 0x876E chocando no
+C 0x8773 cada 4 cuadros
+C 0x877D en el marcador
+C 0x8783 hay 100?
+C 0x8786 el efecto 5
+C 0x878E un litro mas
+C 0x8790 10?
+C 0x8793 0 y las decenas + 1
+C 0x8798 10?
+C 0x879B 0 y las centenas a 1
+C 0x87A2 la columna x 8...
+C 0x87A5 ...menos C
+C 0x87A7 la X del coche
+C 0x87AC la columna x 8...
+C 0x87AF ...mas C
+C 0x87B5 sin los 3 bits bajos...
+C 0x87B7 ...entre 8
+C 0x87BE + la fila
+C 0x87C3 la casilla
+L 0x87E7 marcador_fila             Una fila del recuadro
+L 0x883D texto7                    7 casillas de HL en la VRAM DE
+C 0x87C5 en la fila 0, columna 25
+C 0x87C8 HISCORE (7 casillas)
+C 0x87D1 en la fila 3, columna 27
+C 0x87D4 SCORE
+C 0x87DB en la fila 5, columna 25
+C 0x87DE BOMB
+C 0x87E2 desde la fila 6, columna 25
+C 0x87E5 cinco filas de 7
+C 0x87EE las tres filas del recuadro de la velocidad
+C 0x8800 en la fila 14, columna 27
+C 0x8803 P...
+C 0x8809 ...=
+C 0x880E en la fila 15, columna 27: G
+C 0x8816 una fila mas abajo... (H + 1: 8 filas)
+C 0x8817 ...S
+C 0x881C la barra de la distancia: desde la fila 15, columna 28
+C 0x8822 nueve filas
+C 0x8824 dos casillas 0x3D
+C 0x882F la fila siguiente
+C 0x8833 los puntos
+C 0x8836 la zona
+C 0x8839 la gasolina
+C 0x883D 7 casillas
+C 0x8846 se acaba la zona?
+C 0x884D sin gasolina?
+C 0x8850 hay centenas?
+C 0x8854 las decenas
+C 0x885C cada 4 cuadros...
+C 0x8860 ...la casilla 0x31 o 0x32
+C 0x8865 WRTVRM
+C 0x886A (el efecto 4)
+C 0x886D la velocidad
+C 0x8872 8 o mas
+C 0x8874 parado: 60 cuadros
+C 0x8878 entre 4...
+C 0x887C ...+ 14
+C 0x887F los cuadros pasados...
+C 0x8882 ...llegan?
+C 0x8887 la cuenta a 0
+C 0x888A las unidades
+C 0x8890 las decenas
+C 0x8894 las centenas
+C 0x8898 los millares
+C 0x889D todo 0: sin gasolina
+C 0x88A6 una menos...
+C 0x88A7 ...y las de abajo a 9
+C 0x88C1 las cuatro cifras...
+C 0x88C4 ...al reves...
+C 0x88C5 ...en 0xE084-0xE087
+C 0x88CA los ceros de la izquierda (B = 4, C = 0)...
+C 0x88D1 ...con C = 0: la casilla 0 es el mismo 0, asi que no cambia nada (el marcador ensena 057)
+C 0x88D8 en la fila 8, columna 27
+C 0x88E4 si: vuela
+C 0x88EB pulsado?
+C 0x88EE ya visto
+C 0x88F4 la velocidad: 8 o mas
+C 0x88F7 hay disparo
+C 0x88FC el efecto 2
+C 0x8902 su direccion
+C 0x8905 a la derecha?
+C 0x8909 la X - 8
+C 0x8911 la Y
+C 0x8917 el dibujo 0x40
+C 0x891B blanco
+C 0x8920 la X + 8
+C 0x8927 la direccion
+C 0x892C 4: a la izquierda
+C 0x8930 2: a la derecha
+C 0x8934 3: abajo
+C 0x8938 1: arriba, 4 pixeles
+C 0x8942 a la derecha, 4 pixeles
+C 0x8949 abajo
+C 0x8950 a la izquierda
+C 0x8958 la Y dentro (8-0xBF)?
+C 0x8963 la X dentro (4-0xBF)?
+C 0x896F sin disparo
+C 0x8973 el sprite, fuera
+C 0x8978 hay bomba?
+C 0x8982 pulsado?
+C 0x8985 ya visto
+C 0x898B la velocidad: 8 o mas
+C 0x8991 quedan?
+C 0x8995 (BCD)
+C 0x89A1 hay bomba
+C 0x89A4 su direccion
+C 0x89AA a la derecha?
+C 0x89AE a la izquierda?
+C 0x89B2 marca 2: la izquierda
+C 0x89B8 marca 1: la derecha
+C 0x89BC la X y la Y del coche
+C 0x89C8 el dibujo 0x44
+C 0x89CC negro
+C 0x89D3 el boton, visto
+C 0x89D7 estallando?
+C 0x89DC 2 pixeles
+C 0x89DE su direccion
+C 0x89ED arriba
+C 0x89F3 a la derecha
+C 0x89F8 abajo
+C 0x8A01 a la izquierda
+C 0x8A08 dentro de la pantalla?
+C 0x8A1A la cuenta
+C 0x8A20 menos de 32: sigue
+C 0x8A23 48: se acaba
+C 0x8A27 ya estalla?
+C 0x8A30 el efecto 7
+C 0x8A3C el sprite fuera...
+C 0x8A40 ...y todo a cero
+C 0x8A4B cada 4 cuadros...
+C 0x8A50 ...el dibujo 0x34 o 0x38
+C 0x8A57 un rebote?
+C 0x8A5D un pixel a un lado
+C 0x8A69 8 cuadros
+C 0x8A73 se acaba
+C 0x8A83 sin gasolina?
+C 0x8A8A frena
+C 0x8A90 la palanca
+C 0x8A97 1: arriba
+C 0x8A9B 2: arriba y derecha
+C 0x8A9F 3: derecha
+C 0x8AA3 4: abajo y derecha
+C 0x8AA7 5: abajo
+C 0x8AAB 6: abajo e izquierda
+C 0x8AAF 7: izquierda
+C 0x8AB3 8: arriba e izquierda
+C 0x8AD1 toca?
+C 0x8AD6 el borde derecho?
+C 0x8ADC un pixel a la derecha
+C 0x8AE0 toca?
+C 0x8AE5 el borde izquierdo?
+C 0x8AEB un pixel a la izquierda
+C 0x8AF1 el motor
+C 0x8AF4 un cuadro de cada dos...
+C 0x8AFD ...acelera
+C 0x8B01 el dibujo 0
+C 0x8B11 el motor
+C 0x8B14 frena dos veces
+C 0x8B1A el dibujo 0x0C
+C 0x8B2C el motor
+C 0x8B2F frena
+C 0x8B37 el segundo sprite: dibujo 4
+C 0x8B3B la velocidad / 8...
+C 0x8B41 ...+ 0x60: la Y (mas abajo cuanto mas corre)
+C 0x8B49 la X
+C 0x8B52 en la fila 12, columna 26
+C 0x8B5B las bombas (BCD)
+C 0x8B61 las decenas abajo
+C 0x8B65 en la fila 5, columna 30
+C 0x8B6C las unidades
+C 0x8B77 las unidades a 0?
+C 0x8B7B las decenas?
+C 0x8B7F las centenas: parado
+C 0x8B83 una unidad menos
+C 0x8B84 y en binario
+C 0x8B88 el motor de antes...
+C 0x8B8C ...y el de ahora...
+C 0x8B8F ...iguales?
+C 0x8B92 3 (soltado): tampoco
+C 0x8B96 ha cambiado: el tono...
+C 0x8B9C ...baja 0x80 de golpe
+C 0x8BA3 el tono...
+C 0x8BA7 ...desde 0x2C0 no sube
+C 0x8BB0 +3 (mas grave)
+C 0x8BB7 una decena menos...
+C 0x8BB9 ...unidades a 9
+C 0x8BBD una centena menos...
+C 0x8BC1 ...las otras a 9
+C 0x8BC6 chocando no
+C 0x8BCB la velocidad / 32...
+C 0x8BD3 ...los cuadros entre cada paso
+C 0x8BD4 la cuenta
+C 0x8BDB aun no
+C 0x8BE1 200 o mas...
+C 0x8BE8 ...y 240?: tope
+C 0x8BEE uno mas en binario
+C 0x8BF2 las unidades
+C 0x8BF7 9?
+C 0x8BFA 0 y las decenas
+C 0x8C00 0 y las centenas
+C 0x8C03 una mas
+C 0x8C04 el motor ha cambiado?
+C 0x8C11 el tono 0x80 mas
+C 0x8C1B el tono...
+C 0x8C1F ...hasta 0x300...
+C 0x8C23 ...-3 (mas agudo)
+C 0x8C2A parado?
+C 0x8C30 la velocidad / 64
+C 0x8C35 3 menos eso: cada cuantos cuadros
+C 0x8C3B la cuenta
+C 0x8C3F toca: NZ
+C 0x8C45 la cuenta de avance
+C 0x8C4A la velocidad: mas de 0xCC, cada cuadro; luego 0xBC, 0xAC, 0x9C...
+C 0x8C5F a 0xBC-0xCB: dos de cada tres cuadros
+C 0x8C69 a 0xAC-0xBB: tres de cada cinco
+C 0x8C78 a 0x9C-0xAB: uno de cada dos
+C 0x8C7E mas despacio: cada 2 a 7 cuadros
+C 0x8CBC la cuenta a 0
+C 0x8CC0 la demostracion no puntua
+C 0x8CC6 un punto
+C 0x8CCB la distancia, uno mas
+C 0x8CD2 la bomba hacia abajo?
+C 0x8CD8 baja 8 con la carretera
+C 0x8CE0 diez coches
+C 0x8CE2 desde el estado del primero
+C 0x8CE7 baja
+C 0x8CF2 la zona 2?
+C 0x8CF9 una fila de cada dos...
+C 0x8D01 ...la de 0xE600...
+C 0x8D04 ...a la fila nueva (0xE800)
+C 0x8D07 24 casillas
+C 0x8D0E ...o la de 0xE618
+C 0x8D13 la fila nueva...
+C 0x8D18 ...toda de agua (0x6D)
+C 0x8D1D el puente
+C 0x8D20 el paso...
+C 0x8D27 ...de 0 a 26
+C 0x8D31 x 5
+C 0x8D3B en la columna 19
+C 0x8D3E 5 casillas
+C 0x8D43 el primer tramo: una espera?
+C 0x8D4A una fila menos de espera
+C 0x8D50 el siguiente
+C 0x8D55 las casillas del tramo...
+C 0x8D58 ...en la columna (0xE18A)...
+C 0x8D5E ...cuantas (0xE18B)
+C 0x8D66 la fila siguiente del dibujo
+C 0x8D69 una fila menos
+C 0x8D6F repeticiones?
+C 0x8D75 una menos
+C 0x8D79 otra vez desde el principio del dibujo
+C 0x8D8A el segundo tramo: el dibujo...
+C 0x8D8D ...el paso (0-7)...
+C 0x8D94 ...en su columna...
+C 0x8D9A ...cuantas
+C 0x8DA2 el paso siguiente
+C 0x8DA9 8: la columna se mueve
+C 0x8DB1 la columna...
+C 0x8DB5 ...+ el desplazamiento
+C 0x8DBC una vez menos
+C 0x8DC5 el siguiente
+C 0x8DC8 el tercer tramo
+C 0x8DD2 su columna (el final)
+C 0x8DDE hacia atras
+C 0x8DE0 el paso siguiente
+C 0x8DEF la columna se mueve
+C 0x8DFA una vez menos
+C 0x8E03 el siguiente
+C 0x8E0A C = el puerto de control
+C 0x8E0B 0x00...
+C 0x8E0E ...y 0x58: escribir en 0x1800
+C 0x8E15 24 bytes menos
+C 0x8E1F 0xE8A8?
+C 0x8E24 al final del anillo
+C 0x8E2E la fila nueva...
+C 0x8E31 ...24 casillas
+C 0x8E3B desde la fila de arriba
+C 0x8E46 C = el puerto de datos
+C 0x8E47 24 casillas
+C 0x8E4A una al VDP
+C 0x8E50 0xEB00?
+C 0x8E54 al principio del anillo
+C 0x8E57 la fila siguiente de la pantalla
+C 0x8E5B las 24
+C 0x8E62 el byte
+C 0x8E74 las repeticiones
+C 0x8E78 la columna
+C 0x8E7D el dibujo
+C 0x8E81 la lista avanza
+C 0x8E85 cuantas casillas...
+C 0x8E8A ...cuantas filas
+C 0x8E8F el dibujo...
+C 0x8E92 ...y su copia para repetirlo
+C 0x8E9D las filas de espera
+C 0x8EA6 la lista de la zona
+C 0x8EB5 el byte
+C 0x8EBE seis bytes...
+C 0x8EC1 ...a 0xE1A8
+C 0x8ECA la lista de la zona
+C 0x8ED7 la direccion
+C 0x8EE0 el byte
+C 0x8EE9 seis bytes...
+C 0x8EEC ...a 0xE1B0
+C 0x8EF5 la lista de la zona
+C 0x8F02 la direccion
+C 0x8F08 estado 2?
+C 0x8F0E 8 pixeles mas abajo...
+C 0x8F10 ...su Y (5 bytes antes del estado)
+C 0x8F17 la copia y la gasolina a 0...
+C 0x8F2A ...y las centenas a 1: 100
+C 0x8F32 la zona...
+C 0x8F35 ...en la fila 15, columna 29
+C 0x8F3B 0xE100...
+C 0x8F3E ...0xF80 bytes
+C 0x8F41 a cero
+C 0x8F49 los sprites de la RAM...
+C 0x8F4C ...de 16 en 16...
+C 0x8F4F ...32...
+C 0x8F51 ...con la Y fuera
+C 0x8F57 el espacio...
+C 0x8F59 ...en toda la pantalla
+C 0x8F62 la tabla de sprites que va a la VRAM...
+C 0x8F65 ...127 bytes...
+C 0x8F67 ...a cero
+C 0x8F6C a la VRAM
+C 0x8F70 todo 0xF0
+C 0x8F73 las casillas 0x40 del titulo en el primer tercio...
+C 0x8F79 ...el segundo...
+C 0x8F7F ...y el tercero
+C 0x8F85 sus colores
+C 0x8F98 la fuente de la BIOS, desde el caracter 0x30...
+C 0x8F9B ...48 caracteres
+C 0x8F9E LDIRVM
+C 0x8FA1 DE al tercio siguiente (+ 0x800)
+C 0x8FA7 desde el caracter 0x20 (aqui no se llega)
+C 0x8FAA 16 caracteres
+C 0x8FAF 208 casillas
+C 0x8FB7 sus colores
+C 0x8FBF LDIRVM
+C 0x8FC2 8 bytes, FILVRM
+C 0x8FC8 64 casillas
+C 0x8FD0 48 casillas de colores
+C 0x8FD8 2 KB...
+C 0x8FDB ...de 0xB800 a 0x3800
+C 0x8FE3 0xFF: callar
+C 0x8FE9 a 0x1B00...
+C 0x8FEC ...desde 0xE100...
+C 0x8FEF ...32 sprites
+C 0x8FF2 LDIRVM
+C 0x8FF8 la tabla de la VRAM, rehecha
+C 0x8FFB dos
+C 0x9003 28
+C 0x900B dos
+C 0x9011 32 (aqui no se llega)
+C 0x9014 Y, X, dibujo, color
+C 0x9017 copiados
+C 0x9019 los otros 12 bytes, no
+C 0x9024 pide callar?
+C 0x902B ya hecho
+C 0x9032 en partida?
+C 0x9036 una musica?
+C 0x9040 un efecto?
+C 0x9043 sin efecto: los canales B y C a volumen 0
+C 0x9047 WRTPSG
+C 0x904A el C...
+C 0x904E ...WRTPSG
+C 0x9051 el motor va?
+C 0x905A el canal A: sin ruido...
+C 0x905C ...con tono
+C 0x9066 el registro 8
+C 0x906E la parte alta del tono
+C 0x9071 WRTPSG
+C 0x9077 parado
+C 0x907C rapido
+C 0x907E el temblor...
+C 0x9085 ...hasta 6
+C 0x908B parado: el tono 0x3F8
+C 0x9091 el temblor de 3 en 3...
+C 0x9099 ...hasta 20
+C 0x909D otra vez 0
+C 0x90A2 la parte baja del tono...
+C 0x90A5 ...menos el temblor
+C 0x90A8 la parte baja
+C 0x90AC el registro 0
+C 0x90B0 los efectos y la musica
+C 0x90B3 dieciseis cuentas...
+C 0x90B8 ...una mas cada una
+C 0x90BF en partida?
+C 0x90C5 lo sostenido
+C 0x90C8 GTTRIG 1
+C 0x90D0 lo sostenido
+C 0x90D3 GTTRIG 3
+C 0x90DB lo sostenido del teclado
+C 0x90E2 GTSTCK 0: los cursores
+C 0x90EA GTSTCK 1: el mando 1
+C 0x90F1 uno u otro
+C 0x90F6 la demostracion?
+C 0x90FE la cuenta...
+C 0x9100 ...48 cuadros?
+C 0x9104 otra vez
+C 0x9106 una direccion al azar (1-3)...
+C 0x910E ...la 3 es la 8
+C 0x9114 la palanca
+C 0x9117 par o impar...
+C 0x911D ...dispara
+C 0x9122 ...o tira una bomba
+C 0x9127 el boton de empezar
+C 0x912C 0xE043: el boton de empezar
+C 0x9132 la barra
+C 0x9135 lo de la barra...
+C 0x9139 el mando 1
+C 0x9141 ...o lo del mando
+C 0x9149 GTTRIG
+C 0x914D pulsado
+C 0x914F suelto
+C 0x9152 ya estaba pulsado?
+C 0x9155 recien pulsado
+C 0x9159 la fila 8...
+C 0x915B ...SNSMAT
+C 0x915E la barra
+C 0x9163 la fila 8
+C 0x9168 pulsado = 1
+C 0x9169 la barra: boton 1
+C 0x916E el boton 2
+C 0x9171 la fila 6
+C 0x9177 GRAPH: boton 2
+C 0x917B las cifras de los puntos...
+C 0x917E ...en la fila 4, columna 26
+C 0x9184 las del record...
+C 0x9187 ...en la fila 1, columna 26
+C 0x918E las unidades y decenas
+C 0x9192 BCD
+C 0x9196 sin acarreo
+C 0x919B las centenas y millares
+C 0x91A8 las decenas y centenas de millar
+C 0x91B2 pasa de 999999...
+C 0x91B7 ...999999
+C 0x91BC las cifras
+C 0x91BF el record
+C 0x91C3 las seis cifras...
+C 0x91C6 ...de los tres bytes BCD
+C 0x91CB un byte
+C 0x91CD la alta
+C 0x91D5 la baja
+C 0x91DE el record...
+C 0x91E1 ...contra los puntos
+C 0x91E7 menos: nada
+C 0x9201 los tres bytes...
+C 0x9204 ...al record
+C 0x9206 y sus cifras
+C 0x9437 la Y del otro...
+C 0x943A ...menos la del coche
+C 0x943D por debajo de B: no
+C 0x943F por debajo de C: si
+C 0x9442 C: toca
+C 0x9444 NC: no
+C 0x9446 la X
+C 0x944E la Y contra la bomba
+C 0x9456 la X contra la bomba
+C 0x945E la Y contra el disparo
+C 0x9466 la X contra el disparo
+C 0x946E ya ha salido?
+C 0x9474 sale: dibujo 0x4C, blanco
+C 0x9480 hay bomba?
+C 0x9486 la bomba lo toca?
+C 0x9496 la bomba estalla
+C 0x949C parpadea: el color 1 o 2
+C 0x94A8 el coche lo toca?
+C 0x94B8 choca
+C 0x94BD fuera
+C 0x94C4 ya ha salido?
+C 0x94CA sale por arriba...
+C 0x94D2 ...dibujo 0x3C...
+C 0x94D6 ...a un lado al azar
+C 0x94DF color 1...
+C 0x94E5 ...o 5
+C 0x94E9 su velocidad y su X
+C 0x94F0 ya tocado?
+C 0x94F6 el coche lo toca?
+C 0x9506 tocado
+C 0x9509 96 veces frena
+C 0x9516 0 o 1 al azar
+C 0x9521 0?
+C 0x952E empujon en Y?
+C 0x9534 un pixel
+C 0x953A 8 cuadros
+C 0x954C empujon en X?
+C 0x956A la Y
+C 0x956D el camion?
+C 0x9574 sus sprites de detras, 16 mas abajo
+C 0x957D la del segundo sprite
+C 0x9580 la X
+C 0x9593 el camion?
+C 0x959A abajo del todo?
+C 0x95A3 64 bytes a cero
+C 0x95AA abajo del todo?
+C 0x95B3 4 o mas: un sprite
+C 0x95BA 16 bytes
+C 0x95C1 32 bytes
+C 0x95C8 los sprites fuera
+C 0x95E5 no hay
+C 0x95E9 5 o mas
+C 0x95EE 4
+C 0x95F5 si: a moverse
+C 0x95FB su lado
+C 0x9601 3: el camion
+C 0x9609 sus dibujos: 0x24, 0x28, 0x2C, 0x30
+C 0x9619 colores: 13 y 1
+C 0x962C su velocidad
+C 0x9631 sin X?
+C 0x9635 la del borde
+C 0x9638 a su sitio
+C 0x963B dibujos 0x14 y 0x18
+C 0x963F colores 8 y 1
+C 0x964E el coche va despacio (menos de 0x60)?
+C 0x9652 o al azar...
+C 0x9656 ...sale por arriba
+C 0x965B ya hay uno en 0xE3E0?
+C 0x965E en medio de la pantalla?
+C 0x9669 sale por abajo (Y 0xF4)
+C 0x966D algo al azar...
+C 0x9672 ...menos que el coche
+C 0x9679 la fila nueva de la carretera
+C 0x967C a que lado?
+C 0x9682 desde la columna 1...
+C 0x9684 ...busca el borde (0x3D)
+C 0x968A la siguiente
+C 0x968E desde la columna 21...
+C 0x9690 ...hacia atras
+C 0x9699 la anterior
+C 0x969D sale por arriba (Y 0xBC)
+C 0x96A1 la velocidad del coche...
+C 0x96A5 ...poco: 0x60
+C 0x96AB mas algo al azar
+C 0x96B2 tope 0xF8
+C 0x96B4 su velocidad
+C 0x96B7 lenta: no cambia
+C 0x96BB la zona 2?
+C 0x96C2 ...ya tipo 2?
+C 0x96C9 el tipo 1 se queda
+C 0x96D0 al azar...
+C 0x96D6 ...y desde la zona 5...
+C 0x96DD ...el tipo 2 (color 13)
+C 0x96E7 color 2, dibujos 0x1C y 0x20
+C 0x96F3 la fila de arriba del anillo
+C 0x96FB da la vuelta?
+C 0x9706 al final
+C 0x970C 8...
+C 0x970E ...+ 8 por columna
+C 0x9712 la X
+C 0x9718 1: corre
+C 0x971A otro: estalla
+C 0x971D la cuenta
+C 0x9723 el coche choca?
+C 0x9729 o se acaba la zona?
+C 0x972F baja 2
+C 0x9737 la velocidad del coche menos la suya
+C 0x973D igual: quieto
+C 0x973F el coche es mas lento: sube
+C 0x9741 0x30 o mas: cada cuadro
+C 0x9745 0x20: cada 2
+C 0x9749 0x10: cada 3
+C 0x974D si no, cada 4
+C 0x9752 la cuenta a 0
+C 0x9756 un pixel abajo
+C 0x9759 el camion?
+C 0x9760 sus otros sprites
+C 0x9772 mucho mas lento?
+C 0x9783 la cuenta a 0
+C 0x9787 un pixel arriba
+C 0x97A3 el tipo 2?
+C 0x97AA a su altura?
+C 0x97B2 a que lado esta el coche?
+C 0x97BA a la derecha
+C 0x97C0 a la izquierda
+C 0x97C4 su fila
+C 0x97CA arriba del todo: la de arriba
+C 0x97D2 el camion...
+C 0x97D9 ...en la zona 6: no
+C 0x97E0 su lado
+C 0x97E6 desde la derecha...
+C 0x97EC ...hasta la carretera (menos de 0x4E)
+C 0x97F5 desde la izquierda
+C 0x9800 la columna x 8 + 8
+C 0x9807 sin moverse
+C 0x9811 4 de margen
+C 0x9815 -6 de margen
+C 0x9818 justo?
+C 0x981D a la izquierda
+C 0x981F toca?
+C 0x9825 a la derecha
+C 0x9834 a la izquierda
+C 0x983D lo que pisa a la izquierda
+C 0x9845 un borde (0x57 o mas)?
+C 0x984A se movia?
+C 0x9854 rebota a la derecha
+C 0x985A rebota a la izquierda
+C 0x9861 lo que pisa a la derecha
+C 0x986F sin rebote
+C 0x9876 el camion?
+C 0x987E la cuenta del lado
+C 0x9884 al azar: 112-239 cuadros...
+C 0x988D ...y cambia de lado
+C 0x9890 un cuadro menos
+C 0x9893 en medio de la pantalla?
+C 0x989E la espera de lo que suelta...
+C 0x98A5 ...hasta 48
+C 0x98A8 el coche en su columna?
+C 0x98B0 desde la zona 4
+C 0x98B7 ya suelta?
+C 0x98BD el coche choca?
+C 0x98C3 suelta: el objeto de +0x60 es del tipo 5...
+C 0x98CF ...donde el camion
+C 0x98DB tocado dos veces?
+C 0x98E2 parpadea: color 9 o 10
+C 0x98F2 el disparo?
+C 0x9908 rebota: el efecto 6
+C 0x9910 la bomba?
+C 0x9916 aun no estalla?
+C 0x992D estalla
+C 0x9931 un golpe mas
+C 0x9937 tres?
+C 0x993B destrozado
+C 0x994B en partida...
+C 0x9951 ...el efecto 1...
+C 0x9956 ...y 500 puntos
+C 0x995B el coche lo toca?
+C 0x9969 choca
+C 0x996F hay un coche en 0xE3E0?
+C 0x9975 cerca en X...
+C 0x9983 ...y en Y?
+C 0x9991 lo empuja hacia abajo...
+C 0x9995 ...frenandolo
+C 0x9999 hacia arriba...
+C 0x999D ...acelerandolo
+C 0x99AA y cambia de lado
+C 0x99AD el coche choca?
+C 0x99B3 sin gasolina: sigue
+C 0x99B6 los que quedan detras en la lista
+C 0x99C5 el siguiente
+C 0x99CA se empujan?
+C 0x99D2 la bomba?
+C 0x99E8 estalla
+C 0x99EC el coche, destrozado
+C 0x99F0 en partida...
+C 0x99F5 ...el efecto 1
+C 0x99FA el tipo 2?
+C 0x9A01 50 puntos
+C 0x9A06 20 bombas
+C 0x9A0D 100 puntos
+C 0x9A12 el disparo?
+C 0x9A28 un golpe
+C 0x9A2B el efecto 6
+C 0x9A33 tres?
+C 0x9A3A dos?
+C 0x9A41 parpadea
+C 0x9A4D el tipo 2 (color 13)?
+C 0x9A54 la cuenta...
+C 0x9A5A ...64?
+C 0x9A5E cambia de lado
+C 0x9A65 la Y del coche menos la del otro
+C 0x9A6B el coche por debajo?
+C 0x9A6F por encima?
+C 0x9A74 la X: el otro a la derecha?
+C 0x9A7E ...a la izquierda?
+C 0x9A83 la X
+C 0x9A92 muy deprisa: choca
+C 0x9A9A el coche a la derecha...
+C 0x9A9D ...el otro arriba...
+C 0x9AA0 ...y a la derecha
+C 0x9AA3 muy deprisa: choca
+C 0x9AAA el coche a la izquierda
+C 0x9AB3 muy deprisa: choca
+C 0x9AC2 muy deprisa: choca
+C 0x9AD1 el rebote: +1
+C 0x9AD5 la cuenta a 0
+C 0x9AD9 frena 5 veces
+C 0x9AE3 el rebote: -1
+C 0x9AE9 el otro: +1 en Y
+C 0x9AF2 -1 en Y
+C 0x9AF8 el lado
+C 0x9AFC -1 en X
+C 0x9B05 el otro lado
+C 0x9B09 +1 en X
+C 0x9B0F el coche choca
+C 0x9B14 el otro estalla
+C 0x9B19 su segundo sprite fuera
+C 0x9B1D se acaba la zona?
+C 0x9B23 con el coche arriba del todo: fuera
+C 0x9B2B el dibujo del estallido, cada 4 cuadros
+C 0x9B35 color 8
+C 0x9B39 la cuenta...
+C 0x9B3F ...32?
+C 0x9B44 se acaba
+C 0x9B47 la velocidad del otro / 64
+C 0x9B4F 3 menos eso
+C 0x9B52 la cuenta
+C 0x9B5A toca
+C 0x9B63 el de detras existe?
+C 0x9B68 estallando no
+C 0x9B6E la Y
+C 0x9B74 cerca por encima?
+C 0x9B78 por debajo?
+C 0x9B7B la X
+C 0x9B88 los empujones
+C 0x9B8E los lados
+C 0x9B96 los empujones de los dos
+C 0x9BA2 se cambian la velocidad
+C 0x9BAE las cuentas a 0
+C 0x9BB7 los empujones al reves
+C 0x9BE4 ya hay un coche en 0xE3E0?
+C 0x9BEA la segunda vuelta?
+C 0x9BF0 desde la zona 3
+C 0x9BF7 y el coche deprisa
+C 0x9BFE la cuenta...
+C 0x9C05 ...240 cuadros
+C 0x9C0D un coche del tipo 3: el camion
+C 0x9C12 en la zona 6...
+C 0x9C19 ...en la X 0x60
+C 0x9C1E la segunda vuelta?
+C 0x9C24 o desde la zona 4
+C 0x9C2B a la distancia 0x80...
+C 0x9C32 ...una cosa del tipo 4
+C 0x9C37 la espera...
+C 0x9C3A ...un cuadro menos
+C 0x9C3F la zona...
+C 0x9C43 ...x 8 + 8
+C 0x9C48 0x80 menos eso...
+C 0x9C4C ...mas algo al azar: la espera siguiente
+C 0x9C54 el primer hueco libre?
+C 0x9C5A un coche del tipo 1
+C 0x9C62 el segundo?
+C 0x9C68 tipo 1, lado 2
+C 0x9C70 con el camion fuera...
+C 0x9C75 ...del tipo 2
+C 0x9C7B el tercero?
+C 0x9C81 tipo 2, lado 3
+C 0x9C8B con el camion fuera, nada mas
+C 0x9C90 desde la zona 3
+C 0x9C96 el cuarto?
+C 0x9C9C tipo 1, lado 4
+C 0x9CA6 desde la zona 6
+C 0x9CAC el quinto?
+C 0x9CB2 tipo 1, lado 5
+C 0x9CBD el paso 1
+C 0x9CC2 desde la fila 0, columna 12...
+C 0x9CC8 ...y desde la fila 23, columna 12
+C 0x9CCE el boton?
+C 0x9CD4 cada 3 cuadros
+C 0x9CDB la cuenta a 0
+C 0x9CDF el final, si toca
+C 0x9CE2 las filas de CASIO
+C 0x9CE5 el paso siguiente
+C 0x9CEA 21: se acaba
+C 0x9CEE desde el 9...
+C 0x9CF2 ...la de arriba baja una fila...
+C 0x9CFC ...y la de abajo sube una
+C 0x9D06 la musica 4
+C 0x9D0B el boton?
+C 0x9D11 128 cuadros
+C 0x9D1A ya visto
+C 0x9D1D el sonido callado
+C 0x9D20 la pantalla en blanco
+C 0x9D37 el paso...
+C 0x9D3B ...no mas de 9
+C 0x9D41 en la fila 12, columna 0, menos el paso
+C 0x9D49 la fila de arriba de CASIO...
+C 0x9D4E ...C casillas
+C 0x9D51 la fila de abajo
+C 0x9D56 la de abajo
+C 0x9D63 LDIRVM
+C 0x9D66 la otra mitad, desde la fila 11
+C 0x9D71 pasado el 9: se corre
+C 0x9D78 desde el final, hacia atras
+C 0x9D81 LDIRVM
+C 0x9D93 la ultima fila
+C 0x9D9C LDIRVM
+C 0xBAC8 el numero
+C 0xBAC9 en partida?
+C 0xBACF el efecto pedido
+C 0xBAD3 ya hay uno?
+C 0xBAD7 el de antes es menor: se queda
+C 0xBAD9 el nuevo
+C 0xBADB la musica pedida
+C 0xBAE0 una musica sonando?
+C 0xBAE7 una pedida?
+C 0xBAEF un efecto sonando?
+C 0xBAF3 uno pedido?
+C 0xBAF8 la pedida puede mas?
+C 0xBB00 el pedido puede mas?
+C 0xBB06 la musica?
+C 0xBB0C o un efecto que use el canal A?
+C 0xBB12 el canal A
+C 0xBB18 sus registros 0 y 8
+C 0xBB1C el canal 0
+C 0xBB20 de vuelta
+C 0xBB27 sigue
+C 0xBB2A 1: se acaba
+C 0xBB2F 2: calla
+C 0xBB34 la musica o un efecto?
+C 0xBB3F el canal B
+C 0xBB45 los registros 2 y 9
+C 0xBB48 los bits del canal B
+C 0xBB4F el canal 1
+C 0xBB55 de vuelta
+C 0xBB5C 3: sigue
+C 0xBB61 los bits de vuelta
+C 0xBB6A acabado
+C 0xBB6D el canal C
+C 0xBB73 los registros 4 y 10
+C 0xBB76 los bits del canal C
+C 0xBB7E el canal 2
+C 0xBB84 de vuelta
+C 0xBB8B 3: sigue
+C 0xBB9A acabado
+C 0xBB9E el barrido del ruido
+C 0xBBA1 al canal de trabajo
+C 0xBBA4 18 bytes
+C 0xBBAF la nota sigue?
+C 0xBBB6 su cuenta
+C 0xBBBA sigue
+C 0xBBBF por donde va
+C 0xBBC3 una orden?
+C 0xBBC7 la nota
+C 0xBBCA su periodo
+C 0xBBD0 el canal con tono, sin ruido
+C 0xBBD8 corrido al canal
+C 0xBBE3 el registro 7
+C 0xBBE9 3: sigue
+C 0xBBEC 0xF0: ruido
+C 0xBBEF 0xFF: el final
+C 0xBBF6 0xF7: callar
+C 0xBBFD 0xFE: al principio
+C 0xBC0A cuantas veces...
+C 0xBC0C ...en +5
+C 0xBC10 la marca 1
+C 0xBC19 una vez menos
+C 0xBC1E ya: sigue
+C 0xBC21 a la marca 1
+C 0xBC2A cuantas veces...
+C 0xBC2C ...en +6
+C 0xBC30 la marca 2
+C 0xBC33 por donde va
+C 0xBC3C una vez menos
+C 0xBC41 ya: sigue
+C 0xBC44 a la marca 2
+C 0xBC4D cuantas veces...
+C 0xBC4F ...en +7
+C 0xBC53 la marca 3
+C 0xBC58 una vez menos
+C 0xBC5D ya: sigue
+C 0xBC60 a la marca 3
+C 0xBC65 el ruido
+C 0xBC69 la duracion y el volumen
+C 0xBC6D por donde va
+C 0xBC70 el canal con ruido, sin tono
+C 0xBC7A hay ruido?
+C 0xBC7F con barrido?
+C 0xBC84 quedan pasos?
+C 0xBC89 la espera...
+C 0xBC8C ...un cuadro menos
+C 0xBC91 un paso menos
+C 0xBC98 otra vez la espera
+C 0xBC9E el periodo...
+C 0xBCA2 ...mas el paso
+C 0xBCA9 al registro 6
+C 0xBCAC el canal
+C 0xBCAF un paso
+C 0xBCB3 el que suena
+C 0xBCB5 el pedido: ninguno?
+C 0xBCB8 C si es menor
+C 0xBCBB la duracion, uno menos
+C 0xBCBC acabada
+C 0xBCC0 el volumen: 0?
+C 0xBCC5 15: la envolvente corta
+C 0xBCCA la cuenta de la envolvente
+C 0xBCCE la espera...
+C 0xBCD0 ...otra vez
+C 0xBCD2 el volumen, uno menos
+C 0xBCD4 al PSG
+C 0xBCE0 la cuenta
+C 0xBCE5 el volumen a 0
+C 0xBCEC acabada: A = 1
+C 0xBCF0 la nota
+C 0xBCF4 con barrido?
+C 0xBCFC el periodo...
+C 0xBD00 ...registro 6
+C 0xBD03 sin barrido
+C 0xBD10 hay ruido
+C 0xBD15 hay ruido con barrido
+C 0xBD1C el periodo...
+C 0xBD20 ...registro 6
+C 0xBD24 cuantas veces...
+C 0xBD29 ...cada cuanto
+C 0xBD31 la nota...
+C 0xBD35 ...el volumen (la mitad baja)
+C 0xBD3A la duracion (la mitad alta)...
+C 0xBD41 ...0xE: en el byte siguiente
+C 0xBD45 la tabla de duraciones
+C 0xBD4D la duracion
+C 0xBD55 volumen 15?
+C 0xBD5C la duracion...
+C 0xBD61 ...menos la mitad: la espera
+C 0xBD67 la cuenta de la envolvente
+C 0xBD6A el volumen 15
+C 0xBD6F al PSG
+C 0xBD73 el byte
+C 0xBD74 menos de 0x10: la parte alta
+C 0xBD78 al registro B + 1
+C 0xBD7C la parte baja
+C 0xBD7D al registro B
+C 0xBD90 el valor...
+C 0xBD91 ...el registro C
+C 0xBD92 WRTPSG
+C 0xBD95 el registro B
+C 0xBD99 el registro B + 1
+C 0xBD9E el registro 7
+C 0xBDA3 el registro 6
+C 0xBDA8 la tabla de musicas
+C 0xBDAB la musica pedida...
+C 0xBDAE ...es la que suena
+C 0xBDB1 x 6
+C 0xBDB7 el canal A
+C 0xBDBB los canales B y C
+C 0xBDC1 la pedida, gastada
+C 0xBDC4 los tres canales con tono
+C 0xBDCF otra pedida?
+C 0xBDD5 sin musica
+C 0xBDD8 0xFF: todo callado...
+C 0xBDDC ...registro 7
+C 0xBDDF los canales...
+C 0xBDE2 ...67 bytes...
+C 0xBDE4 ...a cero
+C 0xBDEA el canal A callado
+C 0xBDF5 la tabla de efectos
+C 0xBDF8 el pedido...
+C 0xBDFB ...es el que suena
+C 0xBDFE x 4
+C 0xBE02 los canales B y C
+C 0xBE05 el pedido, gastado
+C 0xBE08 B y C con tono
+C 0xBE10 otro pedido?
+C 0xBE16 sin efecto
+C 0xBE19 los canales B y C...
+C 0xBE1C ...36 bytes a cero
+C 0xBE21 B y C callados
+C 0xBE28 el canal B: su pieza...
+C 0xBE2B ...y su principio
+C 0xBE34 el canal C
+C 0xBE3F sin nota en marcha
+C 0xBE47 + la musica x 6
+C 0xBE49 el canal A: su pieza...
+C 0xBE4C ...y su principio
+C 0xBFA0 el paso...
+C 0xBFA3 ...9 o mas
+C 0xBFA6 8 casillas
+C 0xBFA9 la fila de abajo de CASIO...
+C 0xBFAC ...en la fila de arriba
+C 0xBFB3 la fila de encima...
+C 0xBFBA ...con la de arriba de CASIO
+C 0xBFC3 y la de encima...
+C 0xBFCA ...en blanco
+C 0xBFD3 abajo: la de arriba de CASIO
+C 0xBFE5 y la de abajo
+C 0xBFF3 y una en blanco
+C 0x8C96 cada 2 o 5
+C 0x9BC7 la X
+C 0x97F7 la casilla
+C 0x8C82 0x60-0x87: cada 3
+C 0x8C92 parado: nada
+C 0x9552 un pixel a un lado
+C 0x955E 8 cuadros
