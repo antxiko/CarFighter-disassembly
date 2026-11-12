@@ -2381,7 +2381,7 @@ palanca:		; La palanca: los cursores o el mando 1 (GTSTCK 0 y 1), en 0xE180
 	call 000d5h		;90ea   ; GTSTCK 1: el mando 1
 	ld c,a			;90ed
 	ld a,(0e181h)		;90ee
-	or c			;90f1   ; uno u otro
+	or c			;90f1   ; uno u otro: un OR de dos numeros de direccion (1-8, no bits): con los dos a la vez sale otra
 	ld (0e180h),a		;90f2
 	ret			;90f5
 demostracion:		; En la demostracion: cada 48 cuadros una direccion al azar (1, 2, 3 cambia a 8) y dispara o tira una bomba

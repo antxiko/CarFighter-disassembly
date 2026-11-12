@@ -95,7 +95,10 @@ PAGINAS = [
     [("CURIOSITIES.html", "CURIOSIDADES.html", "Curiosities", "Curiosidades",
       "the zeros that stay, a tune nobody asks for, the letters at a fixed address and the code nobody reaches",
       "los ceros que se quedan, una m&uacute;sica que nadie pide, las letras en una direcci&oacute;n fija y el "
-      "c&oacute;digo al que no se llega")],
+      "c&oacute;digo al que no se llega"),
+     ("SECRETS-AND-BUGS.html", "SECRETOS-Y-FALLOS.html", "Secrets and bugs", "Secretos y fallos",
+      "what was searched for: no hidden keys, the cursor keys and the joystick mixed into another direction, and the score checked",
+      "lo que se ha buscado: ninguna tecla escondida, los cursores y el mando que se mezclan en otra direcci&oacute;n, y los puntos comprobados")],
     [("UNDER-THE-HOOD.html", "POR-DENTRO.html", "Under the hood", "Por dentro",
       "rebuilding the ROM, the BIOS it uses, the interrupt, the road in RAM and the tools",
       "rehacer la ROM, la BIOS que usa, la interrupci&oacute;n, la carretera en la RAM y las herramientas")],

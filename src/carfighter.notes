@@ -1510,7 +1510,7 @@ C 0x90D3 GTTRIG 3
 C 0x90DB lo sostenido del teclado
 C 0x90E2 GTSTCK 0: los cursores
 C 0x90EA GTSTCK 1: el mando 1
-C 0x90F1 uno u otro
+C 0x90F1 uno u otro: un OR de dos numeros de direccion (1-8, no bits): con los dos a la vez sale otra
 C 0x90F6 la demostracion?
 C 0x90FE la cuenta...
 C 0x9100 ...48 cuadros?
